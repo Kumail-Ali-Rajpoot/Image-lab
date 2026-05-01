@@ -2,8 +2,8 @@
 import DynamicIcon from '@/components/hooks/DynamicIcons'
 import React from 'react'
 import { cn } from '@/lib/utils'
-import Link from 'next/link' // Import Link
-
+import Link from 'next/link'
+import { motion } from 'framer-motion'
 interface props {
     idx: any,
     folderName: string,
@@ -12,6 +12,11 @@ interface props {
 
 export default function Folder({idx, folderName, numImages}: props) {
   return (
+    <motion.div
+      initial={{opacity:0}}
+      animate={{opacity:1}}
+      exit={{opacity:0}}
+      transition={{duration:0.1,delay:0.1}}>
     <Link 
       href={`/protected-dashboard/folder/${folderName}`}
       className={cn(
@@ -21,7 +26,8 @@ export default function Folder({idx, folderName, numImages}: props) {
       )}
     >
         <div className='flex items-center justify-between'>
-            <p className='flex items-center gap-2'>
+          {/* Folder Name */}
+            <p className='flex items-center gap-2 capitalize'>
               <DynamicIcon iconName='Folder' className='size-5' />
               {folderName}
             </p>
@@ -46,5 +52,6 @@ export default function Folder({idx, folderName, numImages}: props) {
             </div>
         </div>
     </Link>
+    </motion.div>
   )
 }

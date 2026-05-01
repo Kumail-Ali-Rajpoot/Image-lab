@@ -2,7 +2,7 @@
 import React from 'react'
 import InfiniteLinesWrapper from '../hooks/InfiniteLinesWrapper'
 import Folder from '../ui/self/Folder'
-import { motion,MotionConfig } from "framer-motion";
+import { motion,AnimatePresence } from "framer-motion";
 import Image from 'next/image'
 import { Button } from '../ui/button'
 import { FolderSearch } from "@/components/base/Search"
@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation';
 import { authClient } from '@/lib/auth-client';
 import { usePathname } from 'next/navigation';
 import { toast } from 'sonner';
+import Loader from "@/components/ui/self/Loader"
 
 async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
   const image = e.target.files?.[0];
@@ -100,25 +101,25 @@ export default function Dashoard() {
       >
         <header className='w-full items-center grid grid-cols-1 sm:grid-cols-2 gap-8'>
           <motion.section
-          initial={{position:"relative",opacity:0,right:"10%"}}
-          animate={{opacity:1,right:"0%"}}
-          transition={{duration:1}}
+          initial={{position:"relative",x:-10}}
+          animate={{opacity:1,x:0}}
+          transition={{duration:0.1}}
           className='max-w-md w-full flex flex-col items-center p-6 gap-5'>
             <div className="flex flex-col p-2 gap-2">
               <motion.h1
-              initial={{opacity:0,right:"40%"}}
-              animate={{opacity:1,right:"0%"}}
-              transition={{duration:1}}
+              initial={{opacity:0,x:-40}}
+              animate={{opacity:1,x:0}}
+              transition={{duration:0.1,delay:0.95}}
               className='text-3xl sm:text-4xl font-bold tracking-tight'>Welcome to <span className='leading-relaxed text-cyan-500'>Image Lab</span> dashboard</motion.h1>
               <motion.p
-              initial={{opacity:0,right:"40%"}}
-              animate={{opacity:1,right:"0%"}}
-              transition={{duration:1,delay:0.5}}
+              initial={{opacity:0,x:-40}}
+              animate={{opacity:1,x:0}}
+              transition={{duration:0.1,delay:0.94}}
               className='text-base text-muted-foreground'>Manage, store, and organize your images seamlessly</motion.p>
               <motion.div 
-              initial={{opacity:0,right:"40%"}}
-              animate={{opacity:1,right:"0%"}}
-              transition={{duration:1,delay:1}}
+              initial={{ opacity: 0, x: -40 }} // Use x instead of right
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.1, delay: 1 }} // High delay
               className='flex gap-2'>
               <Button variant="default">Store images</Button>
               <Button variant="outline">View folders</Button>
@@ -129,7 +130,7 @@ export default function Dashoard() {
           <motion.div
           initial={{position:"relative",opacity:0,left:"10%"}}
           animate={{opacity:1,left:"0%"}}
-          transition={{duration:1}}
+          transition={{duration:0.1,delay:0.95}}
           >
             <Image 
             width={10000}
@@ -137,6 +138,7 @@ export default function Dashoard() {
             src="/storage-systems.png"
             alt="image-lines"
             unoptimized
+            fetchPriority='high'
             className=''
             />
           </motion.div>
@@ -200,17 +202,25 @@ export default function Dashoard() {
       <InfiniteLinesWrapper
       childContClassName='min-h-[50vh] overflow-y-auto mb-10'
       >
-        <main className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 w-full border-t border-r border-border'>
+        <motion.main layout className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 w-full border-t border-r border-border'>
+            <AnimatePresence>
             {
+              !folders ? <Loader/> :
               folders && folders.length > 0 ? folders.map((folder, i) => (
                 <Folder key={i} idx={i} folderName={folder.name} numImages={0} />
               )) : (
-                <div className="flex items-center justify-center w-full text-center col-span-full py-20">
-                  <p className="text-muted-foreground italic">No folders found. Create your first folder to get started!</p>
-                </div>
+                <motion.div
+                initial={{opacity:0}}
+                animate={{opacity:1}}
+                transition={{duration:0.1}}
+                exit={{opacity:0}}
+                className="flex items-center justify-center w-full text-center col-span-full py-20">
+                  <Loader />
+                </motion.div>
               )
             }
-        </main>
+            </AnimatePresence>
+        </motion.main>
       </InfiniteLinesWrapper>
     </div>
   )

@@ -10,7 +10,12 @@ export async function proxy(request: NextRequest) {
   })
   if(pathname === "/" && session) {
     return NextResponse.redirect(new URL("/protected-dashboard", request.url));
-  }else if((pathname === "/protected-dashboard" || pathname === "/user-manager") && !session) {
+  }
+  const isProtectedRoute = 
+    pathname.startsWith("/protected-dashboard") || 
+    pathname.startsWith("/user-manager");
+
+  if(isProtectedRoute && !session) {
     return NextResponse.redirect(new URL("/", request.url));
   }
   return NextResponse.next();

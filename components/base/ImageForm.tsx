@@ -8,6 +8,8 @@ import Image from 'next/image'
 import InfiniteLinesWrapper from '../hooks/InfiniteLinesWrapper'
 import { SelfDialog } from '../ui/self/SelfDialog'
 import { useParams } from 'next/navigation'
+import { toast } from 'sonner'
+import { motion,AnimatePresence } from 'framer-motion';
 const InstructionsList = [
   {
     title: "Important Instructions",
@@ -28,39 +30,127 @@ const InstructionsList = [
 export default function ImageForm() {
   const params = useParams();
   const folderName = params.name;
+  const [choosenImages,setChoosenImages] = React.useState<string[] | null>(null)
+  const [rawImagesData,setRawImagesData] = React.useState<File[] | null>(null)
+  const fileInputRef = React.useRef<HTMLInputElement>(null)
+  const handleImagesChange = (e:any) => {
+    const rawImages = e.target.files as File[];
+    setRawImagesData(rawImages)
+    const images = Array.from(rawImages).map(img => URL.createObjectURL(img));
+    setChoosenImages(images);
+  }
   const handleSubmit = (e:any)=>{
       e.preventDefault()
-      const formData = new FormData(e.currentTarget)
-      formData.append("folderName",folderName as string);
-      const promise:Promise<any[]> = new Promise((resolve:any,reject:any)=>{
-        fetch("/api/image-upload",{
-          method:"POST",
-          body:formData
-        }).then((res)=>{
-          if(res.ok){
-            resolve(res)
-          }else{
-            reject(res)
-          }
-        }).catch((err)=>{
-          reject(err)
+      const formImages = rawImagesData as File[];
+      const formImagesArray = Array.from(formImages);
+      if (!formImages || formImages.length === 0) {
+        toast.error("No images selected", {
+          description: "Please select at least one image to upload."
+        });
+        return; 
+      }
+      try {
+        while (formImagesArray.length !== 0) {
+        const formData = new FormData()
+        const img = formImagesArray.splice(0,1);
+        formData.append("images",img[0])
+        formData.append("folderName",folderName as string);
+          const promise:Promise<any[]> = new Promise((resolve:any,reject:any)=>{
+            fetch("/api/image-upload",{
+              method:"POST",
+              body:formData
+            }).then((res)=>{
+              if(res.ok){
+                resolve(res)
+              }else{
+                reject(res)
+              }
+            }).catch((err)=>{
+              reject(err)
+            }).finally(()=>{
+              setChoosenImages(null);
+              if(fileInputRef.current){
+                fileInputRef.current.value = ""
+              }
+            })
+          })
+          toast.promise(promise,{
+            loading: "Uploading images...",
+            success: "Images uploaded successfully",
+            error: "Failed to upload images",
+          })
+      }
+    }catch(err:any) {
+        toast("Failed to upload",{
+          description: err as string
         })
-      })
+      }
     }
   return (
     <InfiniteLinesWrapper
       parentContClassName='border-t'
-      childContClassName='p-0 overflow-hidden grid grid-cols-1 md:grid-cols-2 relative h-screen'
+      childContClassName='p-0 overflow-hidden grid grid-cols-1 md:grid-cols-2 relative min-h-screen'
       >
-      <form onSubmit={(e:any)=>{handleSubmit(e)}} className='border-t border-r flex flex-col justify-center items-center gap-2 p-2'>
-          <Label htmlFor='image' className='w-full'>
+      <motion.form
+      layout
+      onSubmit={(e:any)=>{handleSubmit(e)}} className='border-t border-r flex flex-col justify-center items-center gap-2 p-2'>
+          <motion.div
+          className='w-full'
+          layout>
+          <Label htmlFor='image' className='w-full flex flex-col'>
             <div className='w-full flex flex-col items-center justify-center gap-2 p-2 border'>
               <DynamicIcon iconName="Upload"/>
               <span className='text-lg font-bold'>Upload Images</span>
               <p className='text-muted-foreground'>Click here to upload images</p>
             </div>
           </Label>
-          <Input className='hidden' type="file" multiple={true} id="image" name="images" />
+          </motion.div>
+          <AnimatePresence>
+            {
+              choosenImages && (
+                <motion.div layout 
+                key="image-preview-container"
+                initial={{opacity:0,height:0}}
+                animate={{opacity:1,height:"auto"}}
+                exit={{opacity:0,height:0}}
+                transition={{
+                  duration: 0.3,
+                  ease: "easeInOut"
+                }}
+                className='flex flex-col overflow-hidden w-full p-2 gap-2 border'>
+                  <h1 className='border p-2'>Images want to upload</h1>
+                  <div className='w-full flex flex-wrap max-h-40 overflow-y-scroll border gap-2'>
+                    {choosenImages.map((img,index)=>(
+                      <div key={index} className='border'>
+                        <Image 
+                        src={img}
+                        alt={'preview'}
+                        width={100}
+                        height={100}
+                        unoptimized
+                      />
+                    </div>
+                  ))}
+                  </div>
+                  <Button 
+                  type='button'
+                  onClick={()=>{
+                    setChoosenImages(null)
+                    if(fileInputRef.current){
+                      fileInputRef.current.value = ""
+                    }
+                  }}
+                  variant={"destructive"}>Remove All</Button>
+                </motion.div>
+              )
+            }
+            </AnimatePresence>
+          <Input 
+          ref={fileInputRef}
+          onChange={handleImagesChange}
+          className='hidden'
+          type="file"
+          multiple={true} id="image" name="images" />
           <div className='border w-full'>
             <div className="grid grid-cols-1 md:grid-cols-2">
               {
@@ -89,7 +179,7 @@ export default function ImageForm() {
           >
               <DynamicIcon iconName="Upload"/>Upload
           </Button>
-      </form>
+      </motion.form>
       <div>
         <Image 
         src="/unique-illustrated-image.png"

@@ -38,6 +38,7 @@ model Image {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   publicId    String
+  name        String
   url         String
   ownerEmail  String
   folderId    String

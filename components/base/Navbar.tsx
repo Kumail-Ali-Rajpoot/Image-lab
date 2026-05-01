@@ -23,7 +23,7 @@ export default function Navbar() {
     <motion.div className='w-full' 
     initial={{filter: "blur(2px)",opacity:0}} 
     animate={{filter: "blur(0px)",opacity:1}} 
-    transition={{duration: 0.5}}>
+    transition={{duration: 0.1}}>
     <InfiniteLinesWrapper childContClassName='flex justify-between items-center'>
       <Image src="/logo.png" alt="logo" width={100} height={100} className='' />
       

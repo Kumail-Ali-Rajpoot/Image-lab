@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
         });
         await prisma.folder.create({
             data: {
-                name: "Default",
+                name: "default",
                 userId: user.id,
                 userEmail: userData.email
             }

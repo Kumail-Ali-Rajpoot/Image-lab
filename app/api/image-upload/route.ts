@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({success:false,error:"No form data found"},{status:400})
         }
         const images = formData.getAll("images") as File[];
-        const imagesArray = Array.from(images) as File[];
+        // const imagesArray = Array.from(images) as File[];
         const folderName = formData.get("folderName") as string;
         const folder = await prisma.folder.findFirst({
             where:{
@@ -30,8 +30,9 @@ export async function POST(req: NextRequest) {
             }
         })
         const folderId = folder?.id;
-        const uploadPromise:any[] = imagesArray.map(async(image: File)=>{
+        const uploadPromise:any[] = images.map(async(image: File)=>{ // images is an array of files which was first imagesArray
             const buffer = Buffer.from(await image.arrayBuffer())
+            const imageName = image.name;
             const uploadResponse: any = await new Promise((resolve, reject) => {
                 const uploadStream = cloudinary.uploader.upload_stream(
                     {
@@ -44,17 +45,20 @@ export async function POST(req: NextRequest) {
                     }
                 );
                 uploadStream.end(buffer);
-            }).then(async(res:any)=>{
-                await prisma.image.create({
+            }).then((res:any)=>{
+                const resData = prisma.image.create({
                     data:{
                         url:res.secure_url,
                         publicId:res.public_id,
                         folderId:folderId as string,
-                        ownerEmail:userEmail
+                        ownerEmail:userEmail,
+                        name:imageName,
                     },
                 })
+                console.log("Data added in database:",resData);
+                return resData;
             })
-            console.log(uploadResponse);
+            console.log("uploadResponse:",uploadResponse);
             return uploadResponse
         })
         const promiseResult = await Promise.all(uploadPromise);

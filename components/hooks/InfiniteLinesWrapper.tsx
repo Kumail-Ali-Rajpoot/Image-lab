@@ -14,7 +14,7 @@ export default function InfiniteLinesWrapper({children,parentContClassName,child
     <motion.div 
     initial={{opacity:0,filter:"blur(2px)"}} 
     whileInView={{opacity:1,filter:"blur(0px)"}} 
-    transition={{duration: 0.5,delay:0.1}}
+    transition={{duration: 0.1}}
     viewport={{once:true}}
     style={parentStyle}
     className={cn('border-b w-full flex justify-center',parentContClassName)}>
