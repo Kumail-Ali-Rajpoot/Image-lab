@@ -13,6 +13,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from "sonner";
 import useSWR from 'swr';
 import { fetcher } from '@/lib/fetcher';
+import { Drawer } from 'vaul';
 interface Params {[key:string]: string}
 interface Image  {
   id: number,
@@ -27,44 +28,45 @@ interface FolderData {
   name:string,
   images:Image[]
 }
-
+const MotionDrawer = motion.create(Drawer.Root);
 const MotionButton = motion.create(Button);
 const MotionImage = motion.create(Image);
 export default function FolderPage() {
   const params:Params = useParams();
-  const [isMenuOpen,setIsMenuOpen] = React.useState(false);
+  const [isMenuOpen,setIsMenuOpen] = React.useState<boolean>(false);
+  const [isDeleteAll,setIsDeleteAll] = React.useState<boolean>(false);
   const [selectedImages,setSelectedImages] = React.useState<string[]>([]);
   const [isSelectMode,setIsSelectMode] = React.useState<boolean>(false);
   const [deleteDisabled,setDeleteDisabled] = React.useState<boolean>(true);
+  const [allDeleteLoading,setAllDeleteLoading] = React.useState<boolean>(false);
   const folderName:string = params.name;
-
   const handleDeleteSelected = async (publicIds:string[])=>{
-      const formData = new FormData();
-      if(!publicIds || publicIds.length === 0) {
-        toast.error("Please select at least one image!");
-        return;
-      }
-      setDeleteDisabled(true)
-      publicIds.forEach(id => {
-        formData.append("publicIds",id);
-      });
-      const toastId = toast.loading("Deleting images...");
-      try {
-        const res = await fetch('/api/trash-images',{method:'DELETE',body:formData})
-        if(!res.ok)
-          throw new Error("Failed to delete images!");
-        const result = await res.json()
-        mutate(`/api/folder-images/${folderName}`)
-        toast.success("The images are deleted successfully!",{id:toastId})
-      } catch (err:any) {
-        toast.error(err.message || "Failed to delete images!",{id:toastId})
-      } finally {
-        setDeleteDisabled(false);
-        setSelectedImages([]);
-        setIsSelectMode(false);
-      }
+    const formData = new FormData();
+    if(!publicIds || publicIds.length === 0) {
+      toast.error("Please select at least one image!");
+      return;
+    }
+    setDeleteDisabled(true)
+    publicIds.forEach(id => {
+      formData.append("publicIds",id);
+    });
+    const toastId = toast.loading("Deleting images...");
+    try {
+      const res = await fetch('/api/trash-images',{method:'DELETE',body:formData})
+      if(!res.ok)
+        throw new Error("Failed to delete images!");
+      const result = await res.json()
+      mutate(`/api/folder-images/${folderName}`)
+      toast.success("The images are deleted successfully!",{id:toastId})
+    } catch (err:any) {
+      toast.error(err.message || "Failed to delete images!",{id:toastId})
+    } finally {
+      setDeleteDisabled(false);
+      setSelectedImages([]);
+      setIsSelectMode(false);
+    }
   }
-
+  
   const {data:response,isLoading:folderLoading,error:folderError,mutate} = useSWR(`/api/folder-images?folder-name=${folderName}`,fetcher)
   const folderData = response?.data as FolderData | undefined;
   if(folderError){
@@ -72,18 +74,72 @@ export default function FolderPage() {
       description: folderError.message
     })
   }
+  const publicIds:string[] = folderData?.images.map(image => image.publicId) || [];
+  const handleDeleteAll = async () =>{
+    try {
+      setAllDeleteLoading(true)
+      const toastId = toast.loading("Deleting all images...")
+      const formData = new FormData();
+      publicIds.forEach(id => {
+        formData.append("publicIds",id);
+      });
+      const res = await fetch("/api/trash-images",{
+        method:"DELETE",
+        body:formData
+      })
+      if(!res.ok){
+        throw new Error("Failed to delete images!")
+      }
+      const result = await res.json()
+      if(result.success){
+        toast.success("The images are deleted successfully!",{id:toastId})
+        mutate()
+      }else{
+        toast.error("Failed to delete images!",{id:toastId})
+      }
+    }catch(err:any) {
+      console.log(err)
+    } finally {
+      setAllDeleteLoading(false)
+    }
+  }
   return (
     <div>
+      <MotionDrawer
+      initial={{opacity:0}}
+      animate={{opacity:1}}
+      transition={{duration:0.1,type:"spring",damping:25,stiffness:400}} 
+      open={isDeleteAll} onOpenChange={setIsDeleteAll}>
+        <Drawer.Portal>
+        <Drawer.Overlay className='z-50 fixed bg-muted/20 backdrop-blur-xs inset-0'/>
+        <Drawer.Content className='max-w-md w-full z-50 fixed bottom-0 p-2 rounded-t-sm left-1/2 -translate-x-1/2 bg-background border'>
+          <div className='w-10 h-2 rounded-sm bg-muted mx-auto' />
+          <Drawer.Title className="text-md font-bold">Delete All Images</Drawer.Title>
+          <Drawer.Description className="text-xs text-muted-foreground mb-4">
+            Are you sure you want to delete all the images in this folder?
+          </Drawer.Description>
+          <section className='flex gap-2'>
+            <Drawer.Close asChild>
+              <Button variant="outline">Cancel</Button>
+            </Drawer.Close>
+            <Button variant="destructive" disabled={allDeleteLoading} onClick={handleDeleteAll}>
+              {allDeleteLoading?"Deleting...":"Yes, delete all"}
+            </Button>
+          </section>
+        </Drawer.Content>
+        </Drawer.Portal>
+        
+      </MotionDrawer>
       <InfiniteLinesWrapper
       childContClassName={cn('relative')}
       parentContClassName='border-t'
       >
           <nav className='w-full flex items-center justify-between'>
             <Image 
-            className='sm:w-20'
+            className='w-15 sm:w-20'
             src={"/logo.png"} alt="logo" width={100} height={100} />
             <Link href={`/protected-dashboard/folder/${folderName}/add`}>
-              <Button size={"sm"}><DynamicIcon iconName="Image"/>Add Images</Button>
+              <Button size={"sm"} className='md:scale-100 sm:scale-90 scale-75'><DynamicIcon iconName="Image"/>Add Images</Button>
             </Link>
           </nav>
       </InfiniteLinesWrapper>
@@ -91,12 +147,12 @@ export default function FolderPage() {
           <Link href="/protected-dashboard" 
           className='p-1 flex justify-center group items-center sm:gap-1 md:gap-2'>
             <motion.div whileHover={{scale:1.05}} transition={{duration:0.05,ease:"easeInOut"}}
-            className='rounded-xs p-0.5 scale-60 sm:scale-75 md:scale-100 flex transition-all duration-200 group-hover:-translate-x-1 group-active:-translate-x-2'>  
+            className='rounded-xs p-0.5 scale-60 sm:scale-75 md:scale-90 flex transition-all duration-200 group-hover:-translate-x-1 group-active:-translate-x-2'>  
               <DynamicIcon iconName="ArrowLeft"/>
             </motion.div>
           <h1 className='text-[10px] sm:text-sm md:text-md font-semibold'>Folder {folderName}</h1>
           </Link>
-          <div className='relative flex items-center scale-60 sm:scale-100'>
+          <div className='relative flex items-center '>
           <AnimatePresence>
           {
             isSelectMode ? (
@@ -109,7 +165,7 @@ export default function FolderPage() {
               className='flex gap-2'
               >
                 <MotionButton onClick={()=>{setSelectedImages([]);setIsSelectMode(false);}}
-                 layoutId="cancel" variant={"outline"} size={"sm"}>
+                 layoutId="cancel" variant={"outline"} size={"xs"}>
                   <DynamicIcon iconName="X" className='w-4 h-4'/>
                   Cancel
                 </MotionButton>
@@ -119,7 +175,7 @@ export default function FolderPage() {
                   setIsSelectMode(false);
                 }}
                   layoutId="delete" 
-                  size={"sm"} 
+                  size={"xs"} 
                   disabled={deleteDisabled}
                   variant={"destructive"}>
                   <DynamicIcon iconName="Trash2" className='w-4 h-4'/>
@@ -134,18 +190,19 @@ export default function FolderPage() {
             whileInView={{opacity:1,y:0}} 
             exit={{opacity:0,y:10}} 
             transition={{duration:0.1,type:"spring",damping:25,stiffness:400}} 
-            className='absolute right-0 top-0 bg-background border z-50 p-2 rounded-md flex gap-2 flex-col min-w-[160px] shadow-lg'>
+            className=' absolute right-0 top-0 bg-background border z-50 p-2 rounded-md flex gap-2 flex-col sm:min-w-[150px] md:min-w-[200px] shadow-lg'>
             <div className='flex justify-between items-center mb-1 pb-1 border-b'>
               <span className='text-xs font-semibold text-muted-foreground'>Menu</span>
               <div onClick={() => setIsMenuOpen(false)} className='cursor-pointer rounded-sm hover:bg-muted transition-colors p-1'>
                  <DynamicIcon iconName="X" className='w-4 h-4' />
               </div>
             </div>
-            <Button variant={"destructive"} size={"sm"} 
+            <Button variant={"destructive"} size={"xs"} 
+              onClick={()=>{setIsDeleteAll(true); setIsMenuOpen(false); }}
               className='w-full justify-start gap-2'> 
               <DynamicIcon iconName="Trash2" className='w-4 h-4'/> All</Button>
-            <Button variant={"outline"} size={"sm"} 
-              onClick={()=>{setIsSelectMode(true); setIsMenuOpen(false)}}
+            <Button variant={"outline"} size={"xs"} 
+              onClick={()=>{setIsSelectMode(true); setIsMenuOpen(false); }}
               className='w-full justify-start gap-2'> 
               <DynamicIcon iconName="Trash" className='w-4 h-4'/> Selected</Button>
           </motion.div>

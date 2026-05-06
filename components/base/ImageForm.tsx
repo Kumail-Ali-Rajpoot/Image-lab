@@ -95,12 +95,14 @@ export default function ImageForm() {
       >
       <motion.form
       layout
+      key={"image-form"}
       onSubmit={(e:any)=>{handleSubmit(e)}} className='p-2 sm:p-3 md:p-4 border-t border-r flex flex-col justify-center items-center gap-2'>
-        <motion.div layout className='w-full bg-card flex flex-col gap-2 border rounded-sm shadow-xs sm:shadow-sm md:shadow-md lg:shadow-lg shadow-blue-500 p-2'>
+        <motion.div layout key={"image-form-div"} className='w-full bg-card flex flex-col gap-2 border rounded-sm shadow-xs shadow-blue-800 p-2'>
 
           <motion.div
-          className='w-full'
-          layout>
+          className='row-span-2 w-full'
+          layout
+          key={"image-form-div-row"}>
             <Button variant={"outline"} 
             onClick={()=>{
               router.back();
@@ -124,29 +126,69 @@ export default function ImageForm() {
           <AnimatePresence>
             {
               choosenImages && (
-                <motion.div layout 
+                <motion.div layout
                 key="image-preview-container"
                 initial={{opacity:0,height:0}}
                 animate={{opacity:1,height:"auto"}}
-                exit={{opacity:0,height:0}}
-                transition={{
-                  duration: 0.3,
-                  ease: "easeInOut"
+                exit={{ 
+                  opacity: 0, 
+                  height: 0,
+                  margin:0,
+                  padding:0,
+                  transition: {
+                    height: { duration: 0.3, type: "spring",stiffness: 300, damping: 30, restDelta: 0.01 },
+                    opacity: { duration: 0.15 },
+                    margin: { duration: 0.3, type: "spring",stiffness: 300, damping: 30, restDelta: 0.01 },
+                    padding: { duration: 0.3, type: "spring",stiffness: 300, damping: 30, restDelta: 0.01 }
+                  }
                 }}
-                className='flex flex-col overflow-hidden w-full p-2 gap-2 border'>
-                  <h1 className='border p-2'>Images want to upload</h1>
-                  <div className='w-full flex flex-wrap max-h-40 overflow-y-scroll border gap-2'>
+                transition={{
+                  height: { 
+                    type: "spring", 
+                    stiffness: 300, 
+                    damping: 30, 
+                    restDelta: 0.01 
+                  },
+                  opacity: { 
+                    duration: 0.2, 
+                    ease: "easeInOut" 
+                  },
+                  layout: {
+                    type: "spring",
+                    stiffness: 300,
+                    damping: 30
+                  }
+                }}
+                className='flex flex-col overflow-hidden w-full p-3 gap-3 border rounded-md bg-muted/10'>
+                  <h1 className='text-sm font-semibold text-muted-foreground px-1'>Images to upload</h1>
+                  <div className='w-full flex flex-wrap max-h-40 overflow-y-auto scrollbar-hide gap-2 p-1'>
+                    <AnimatePresence mode='popLayout'>
                     {choosenImages.map((img,index)=>(
-                      <div key={index} className='border'>
+                      <motion.div 
+                        layout
+                        key={`${img}-${index}`}
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.8 }}
+                        transition={{ 
+                          type: "spring", 
+                          stiffness: 500, 
+                          damping: 30,
+                          delay: index * 0.02 
+                        }}
+                        className='relative group border rounded-sm overflow-hidden bg-background shadow-sm'
+                      >
                         <Image 
-                        src={img}
-                        alt={'preview'}
-                        width={100}
-                        height={100}
-                        unoptimized
-                      />
-                    </div>
-                  ))}
+                          src={img}
+                          alt={'preview'}
+                          width={80}
+                          height={80}
+                          className="object-cover aspect-square"
+                          unoptimized
+                        />
+                      </motion.div>
+                    ))}
+                    </AnimatePresence>
                   </div>
                   <Button 
                   type='button'
@@ -167,7 +209,7 @@ export default function ImageForm() {
           className='hidden'
           type="file"
           multiple={true} id="image" name="images" />
-          <div className='border w-full hidden sm:block'>
+          <motion.div layout className='border w-full hidden sm:block'>
             <div className="grid grid-cols-1 md:grid-cols-2">
               {
                 InstructionsList.map((d,key)=>(
@@ -184,7 +226,7 @@ export default function ImageForm() {
                 ))
               }
             </div>
-          </div>
+          </motion.div>
           <SelfDialog title='More about data:' 
           description='As you read important instructions and about your data then we want to confirm that you no need to be worried because you can store your harmless images on our website like as your personal storage. We will use your images only for your reference and will not use it anywhere else.' 
           onlyOk={true}>
