@@ -18,9 +18,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Image Lab free storage for images",
   description: "A place to store, organize, and edit your images",
-  icons: {
-    icon: "/logo-square.png",
-  },
+
 };
 
 export default function RootLayout({
