@@ -2,7 +2,7 @@
 import React from 'react'
 import InfiniteLinesWrapper from '../hooks/InfiniteLinesWrapper'
 import Folder from '../ui/self/Folder'
-import { motion,AnimatePresence } from "framer-motion";
+import { motion,AnimatePresence, spring } from "framer-motion";
 import Image from 'next/image'
 import { Button } from '../ui/button'
 import { FolderSearch } from "@/components/base/Search"
@@ -12,6 +12,9 @@ import { authClient } from '@/lib/auth-client';
 import { usePathname } from 'next/navigation';
 import { toast } from 'sonner';
 import Loader from "@/components/ui/self/Loader"
+import useSWR from "swr"
+import { fetcher } from "@/lib/fetcher"
+import { Drawer } from "vaul"
 
 async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
   const image = e.target.files?.[0];
@@ -31,8 +34,26 @@ async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
 export default function Dashoard() {
   const [isUserAdded,setIsUserAdded] = React.useState<boolean>(false);
   const {data:session,isPending} = authClient.useSession();
-  const [folders,setFolders] = React.useState<any[]>([]);
   const router = useRouter(); // Keeping this for the replace to /user-manager
+  const { data:foldersResponse, isLoading:isGetFoldersLoading,error:foldersError} = useSWR("/api/get-folders",fetcher)
+  const folders = foldersResponse?.success ? foldersResponse.data : null;
+  const [isOpenDrawer, setIsOpenDrawer] = React.useState(false); 
+  const { data:allImagesResponse, isLoading:isGetAllImagesLoading,error:allImagesError} = useSWR("/api/get-images",fetcher)
+  const allImages = allImagesResponse?.success ? allImagesResponse.data : [];
+
+  React.useEffect(() => {
+    if(foldersError){
+      toast(foldersError?.message || "Failed to get folders!")
+    }
+  }, [foldersError]);
+  const { data: imagesResponse, isLoading: isGetImagesLoading, error: imagesError } = useSWR("/api/get-images?numOfImages=10", fetcher);
+  const recentImages = imagesResponse?.success ? imagesResponse.data : null;
+  React.useEffect(() => {
+    if (imagesError) {
+      toast(imagesError?.message || "Failed to get recent images!");
+    }
+  }, [imagesError]);
+
   React.useEffect(() => {
     const isAddedChecker = async () => {
       if (!session?.user?.email) return;
@@ -62,39 +83,54 @@ export default function Dashoard() {
         console.error("Failed to check user:", err);
       }
     };
-    const getFolders=async()=>{
-      try {
-        const res = await fetch("/api/get-folders", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        })
 
-        const data = await res.json().catch(() => null);
-        
-        if (!res.ok || !data) {
-          toast(data?.error || data?.message || "Failed to fetch folders");
-          return;
-        }
-
-        if(data.success){
-          setFolders(data.data)
-        }else {
-          toast(data.error || data.message)
-        }
-      } catch (err:any) {
-        toast(`${err.message || "Failed to get folders data!"}`)
-      }
-    }
     if (!isPending) {
       isAddedChecker();
-      getFolders();
     }
   }, [session, isPending, router]);
-  const images = Array(7).fill("https://images.unsplash.com/photo-1542204165-65bf26472b9b?q=80&w=300&auto=format&fit=crop");
   return (
     <div className="flex flex-col w-full pb-10">
+      <Drawer.Root open={isOpenDrawer} onOpenChange={setIsOpenDrawer}>
+        <Drawer.Portal>
+          <Drawer.Overlay className='fixed inset-0 bg-muted-foreground/10 z-50' />
+          <Drawer.Content className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[80%] bg-background rounded-t-xl z-50 flex flex-col">
+            {/* The "Handle" for the drawer (Optional but recommended for Vaul) */}
+            <div className="mx-auto w-12 h-1.5 flex-shrink-0 rounded-full bg-muted my-4" />
+            
+            {/* The actual scrollable area */}
+            <div className="flex-1 scrollbar-hide overflow-y-auto p-4 md:p-6">
+              <Drawer.Title className="text-lg font-bold">Your folders</Drawer.Title>
+              <Drawer.Description className="text-muted-foreground mb-4">
+                The folders where you store your images
+              </Drawer.Description>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {
+                allImagesResponse?.success ? allImagesResponse.data.map((image:any,i:number)=>(
+              <motion.div key={i} initial={{opacity:0}} whileInView={{opacity:1,}} 
+            viewport={{once:true}}
+            exit={{opacity:0}} 
+            transition={{duration:0.1,type:"spring",stiffness:100,damping:15}} 
+            className="group relative min-w-36 min-h-36 overflow-hidden rounded-lg border border-border bg-muted/50 cursor-pointer shadow-sm">
+              <Image src={image.url} 
+              width={400}
+              height={400}
+              unoptimized
+              className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-110" alt="Dashboard image" />
+              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center backdrop-blur-[2px]">
+                <Button size="icon" variant="secondary" className="size-8 rounded-full shadow-md scale-50 group-hover:scale-100 transition-transform duration-300">
+                  <DynamicIcon iconName="Eye" className="size-4" />
+                </Button>
+              </div>
+            </motion.div>
+                )) : (
+                  <p className="text-center text-muted-foreground">No folders found!</p>
+                )
+              }
+              </div>
+            </div>
+          </Drawer.Content>
+        </Drawer.Portal>
+      </Drawer.Root>
       <FolderSearch  />
       <InfiniteLinesWrapper
       childContClassName='py-12 relative overflow-hidden'
@@ -104,18 +140,18 @@ export default function Dashoard() {
           initial={{position:"relative",x:-10}}
           animate={{opacity:1,x:0}}
           transition={{duration:0.1}}
-          className='max-w-md w-full flex flex-col items-center p-6 gap-5'>
-            <div className="flex flex-col p-2 gap-2">
+          className='max-w-md w-full flex flex-col items-center p-1 sm:p-3 md:p-6 gap-5'>
+            <div className="flex flex-col items-center sm:items-start p-0.5 sm:p-2 gap-2">
               <motion.h1
               initial={{opacity:0,x:-40}}
               animate={{opacity:1,x:0}}
               transition={{duration:0.1,delay:0.95}}
-              className='text-3xl sm:text-4xl font-bold tracking-tight'>Welcome to <span className='leading-relaxed text-cyan-500'>Image Lab</span> dashboard</motion.h1>
+              className='text-xl sm:text-2xl md:text-3xl font-bold tracking-tight'>Welcome to <span className='leading-relaxed text-cyan-500'>Image Lab</span> dashboard</motion.h1>
               <motion.p
               initial={{opacity:0,x:-40}}
               animate={{opacity:1,x:0}}
               transition={{duration:0.1,delay:0.94}}
-              className='text-base text-muted-foreground'>Manage, store, and organize your images seamlessly</motion.p>
+              className='text-xs sm:text-base md:text-lg text-muted-foreground'>Manage, store, and organize your images seamlessly</motion.p>
               <motion.div 
               initial={{ opacity: 0, x: -40 }} // Use x instead of right
               animate={{ opacity: 1, x: 0 }}
@@ -147,38 +183,66 @@ export default function Dashoard() {
 
       <InfiniteLinesWrapper childContClassName="pt-8 pb-4">
         <div className="flex justify-between items-end px-2">
-          <div>
+          <div className='flex flex-col gap-2 w-full'>
             <h1
-            className='text-xl flex items-center gap-2 font-bold'>
-              <DynamicIcon iconName='Image' className='size-5 text-primary' />
-              Recent Images
+            className='text-md sm:text-lg md:text-xl flex items-center justify-between w-full gap-2 font-bold'>
+              <section className='flex items-center gap-2'>
+                <DynamicIcon iconName='Image' className='size-5 text-primary' />
+                Recent Images
+              </section>
+              <Button size="sm" onClick={() => setIsOpenDrawer(drawer=>!drawer)} variant="ghost" className="flex text-muted-foreground hover:text-foreground">
+                View All
+              </Button>
             </h1>
             <p
-            className='text-sm text-muted-foreground mt-1'>The most recent images from your folders</p>
+            className='text-xs sm:text-sm text-muted-foreground mt-1'>The most recent images from your folders</p>
           </div>
-          <Button variant="ghost" size="sm" className="hidden sm:flex text-muted-foreground hover:text-foreground">View All</Button>
         </div>
       </InfiniteLinesWrapper>
-      
+        {/* Recent images uploaded by user */}
       <InfiniteLinesWrapper childContClassName="pb-8">
-        <main className='w-full grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-7 gap-3 px-2'>
+        <main className='w-full flex scrollbar-hide overflow-x-auto gap-3 px-2'>
+          <AnimatePresence mode='popLayout'>
           {
-          images?
-          images.map((src, i) => (
-            <div key={i} className="group relative aspect-square overflow-hidden rounded-lg border border-border bg-muted/50 cursor-pointer shadow-sm">
-              <img src={src} className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-110" alt="Dashboard image" />
+            isGetImagesLoading ?(
+              <motion.div initial={{opacity:0}} animate={{opacity:1}}
+              viewport={{once:true}}
+              exit={{opacity:0}}
+              transition={{duration:0.1,type:"spring",stiffness:100,damping:15}} 
+              className="flex items-center justify-center w-full col-span-full">
+                <Loader />
+              </motion.div>
+          ) : 
+          recentImages && recentImages.length > 0 ?
+          recentImages.map((image:any, i:number) => (
+            <motion.div key={i} initial={{opacity:0}} whileInView={{opacity:1,}} 
+            viewport={{once:true}}
+            exit={{opacity:0}} 
+            transition={{duration:0.1,type:"spring",stiffness:100,damping:15}} 
+            className="group relative min-w-36 min-h-36 overflow-hidden rounded-lg border border-border bg-muted/50 cursor-pointer shadow-sm">
+              <Image src={image.url} 
+              width={400}
+              height={400}
+              unoptimized
+              className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-110" alt="Dashboard image" />
               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center backdrop-blur-[2px]">
                 <Button size="icon" variant="secondary" className="size-8 rounded-full shadow-md scale-50 group-hover:scale-100 transition-transform duration-300">
                   <DynamicIcon iconName="Eye" className="size-4" />
                 </Button>
               </div>
-            </div>
+            </motion.div>
           ))
           : 
-          <div className="flex items-center border justify-center">
+          <motion.div initial={{opacity:0}} 
+          viewport={{once:true}}
+          whileInView={{opacity:1}} 
+          exit={{opacity:0}} 
+          transition={{duration:0.1,type:"spring",stiffness:100,damping:15}} 
+          className="flex items-center border justify-center col-span-full py-10 px-2 rounded-lg">
             <p className="text-muted-foreground">No images found</p>
-          </div>
+          </motion.div>
         }
+        </AnimatePresence>
         </main>
       </InfiniteLinesWrapper>
 
@@ -186,11 +250,11 @@ export default function Dashoard() {
         <div className="flex justify-between items-end px-2">
           <div>
             <h1
-            className='text-xl flex items-center gap-2 font-bold'>
+            className='text-md sm:text-lg md:text-xl flex items-center gap-2 font-bold'>
               <DynamicIcon iconName='FolderOpen' className='size-5 text-primary' />
-              Folders <span className="text-muted-foreground font-normal text-sm ml-1">({folders.length})</span>
+              Folders <span className="text-muted-foreground font-normal text-sm ml-1">({folders? folders?.length : "loading..."})</span>
             </h1>
-            <p className='text-sm text-muted-foreground mt-1'>Organize your image library efficiently</p>
+            <p className='text-xs sm:text-sm text-muted-foreground mt-1'>Organize your image library efficiently</p>
           </div>
           <Button onClick={()=>{router.push("/protected-dashboard/create-folder")}} variant="outline" size="sm" className="hidden sm:flex bg-background">
             <DynamicIcon iconName="Plus" className="size-4 mr-2" />
@@ -206,8 +270,8 @@ export default function Dashoard() {
             <AnimatePresence>
             {
               !folders ? <Loader/> :
-              folders && folders.length > 0 ? folders.map((folder, i) => (
-                <Folder key={i} idx={i} folderName={folder.name} numImages={0} />
+              folders && folders.length > 0 ? folders.map((folder:any,i:number) => (
+                <Folder key={i} idx={i} folderName={folder.name} numImages={folder?.images?.length} />
               )) : (
                 <motion.div
                 initial={{opacity:0}}

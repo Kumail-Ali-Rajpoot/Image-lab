@@ -2,6 +2,7 @@ import cloudinary from "@/lib/cloudinary";
 import { NextRequest,NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import {auth} from "@/lib/auth";
+
 export async function POST(req: NextRequest) {
     try {
         const session = await auth.api.getSession({
@@ -30,7 +31,7 @@ export async function POST(req: NextRequest) {
             }
         })
         const folderId = folder?.id;
-        const uploadPromise:any[] = images.map(async(image: File)=>{ // images is an array of files which was first imagesArray
+        const uploadPromise:any[] = images.map(async(image: File)=>{
             const buffer = Buffer.from(await image.arrayBuffer())
             const imageName = image.name;
             const uploadResponse: any = await new Promise((resolve, reject) => {

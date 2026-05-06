@@ -4,6 +4,10 @@ import React from 'react'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
+import { toast } from 'sonner'
+import Image from 'next/image'
+import { fetcher } from '@/lib/fetcher'
+import useSWR from 'swr'
 interface props {
     idx: any,
     folderName: string,
@@ -11,12 +15,17 @@ interface props {
 }
 
 export default function Folder({idx, folderName, numImages}: props) {
+  const {data:folderImages, isLoading:isFolderImagesLoading,error:folderImagesError} = useSWR(`/api/folder-images?folder-name=${folderName}&numOfImages=4`,fetcher);
+  const images = folderImages?.data?.images || [];
+  if(folderImagesError)
+    toast.error("The folder images are not fetched");
   return (
     <motion.div
       initial={{opacity:0}}
-      animate={{opacity:1}}
+      whileInView={{opacity:1}}
+      viewport={{once:true}}
       exit={{opacity:0}}
-      transition={{duration:0.1,delay:0.1}}>
+      transition={{duration:0.1,type:"spring",stiffness:100,damping:15}}>
     <Link 
       href={`/protected-dashboard/folder/${folderName}`}
       className={cn(
@@ -31,24 +40,30 @@ export default function Folder({idx, folderName, numImages}: props) {
               <DynamicIcon iconName='Folder' className='size-5' />
               {folderName}
             </p>
-            <p className='text-xs text-muted-foreground'>images: {numImages}</p>
+            <p className='text-xs text-muted-foreground'>images: {images?.length || 0}</p>
         </div>
-        <div className='border-t mt-1'> {/* Added a small margin top */}
-            <h1 className='text-sm font-semibold'>Images</h1>
-            <p className='text-xs text-muted-foreground'>The images store in this folder</p>
+        <div className='border-t mt-1'>
+              <p className='text-xs py-2 text-muted-foreground'>The images store in this folder</p>
             <div className='flex gap-2 overflow-x-hidden border-t py-2'>
-                <img
-                 src="https://images.unsplash.com/photo-1542204165-65bf26472b9b?q=80&w=300&auto=format&fit=crop"
-                 className='size-10 rounded' // Added rounded for better look
-                 alt="" />
-                <img
-                 src="https://images.unsplash.com/photo-1542204165-65bf26472b9b?q=80&w=300&auto=format&fit=crop"
-                 className='size-10 rounded'
-                 alt="" />
-                <img
-                 src="https://images.unsplash.com/photo-1542204165-65bf26472b9b?q=80&w=300&auto=format&fit=crop"
-                 className='size-10 rounded'
-                 alt="" />
+                {images.length !==0 ? images.map((img:any,i:number)=>(
+                  <Image
+                  key={i}
+                  width={100}
+                  height={100}
+                  unoptimized
+                  fetchPriority='low'
+                  src={img.url}
+                  className='size-10 rounded'
+                  alt={`Image ${i}` }/>
+                )) :
+                (
+                  <div className='flex items-center gap-1'>
+                    <div className='size-10 rounded bg-muted'/>
+                    <div className='size-10 rounded bg-muted'/>
+                    <div className='size-10 rounded bg-muted'/>
+                  </div>
+                )
+                }
             </div>
         </div>
     </Link>

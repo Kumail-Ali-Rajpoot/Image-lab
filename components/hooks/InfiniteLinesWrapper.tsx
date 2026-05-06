@@ -12,8 +12,8 @@ interface props {
 export default function InfiniteLinesWrapper({children,parentContClassName,childContClassName,childStyle,parentStyle}:props) {
   return (
     <motion.div 
-    initial={{opacity:0,filter:"blur(2px)"}} 
-    whileInView={{opacity:1,filter:"blur(0px)"}} 
+    initial={{opacity:0,height:0,overflow:"hidden",filter:"blur(2px)"}} 
+    whileInView={{opacity:1,height:"auto",filter:"blur(0px)", transitionEnd: { overflow: "visible" }}} 
     transition={{duration: 0.1}}
     viewport={{once:true}}
     style={parentStyle}

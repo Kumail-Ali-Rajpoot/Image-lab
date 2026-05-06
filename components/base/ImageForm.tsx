@@ -10,6 +10,7 @@ import { SelfDialog } from '../ui/self/SelfDialog'
 import { useParams } from 'next/navigation'
 import { toast } from 'sonner'
 import { motion,AnimatePresence } from 'framer-motion';
+import { useRouter } from 'next/navigation'
 const InstructionsList = [
   {
     title: "Important Instructions",
@@ -28,6 +29,7 @@ const InstructionsList = [
   }  
 ]
 export default function ImageForm() {
+  const router = useRouter();
   const params = useParams();
   const folderName = params.name;
   const [choosenImages,setChoosenImages] = React.useState<string[] | null>(null)
@@ -42,13 +44,13 @@ export default function ImageForm() {
   const handleSubmit = (e:any)=>{
       e.preventDefault()
       const formImages = rawImagesData as File[];
-      const formImagesArray = Array.from(formImages);
       if (!formImages || formImages.length === 0) {
         toast.error("No images selected", {
           description: "Please select at least one image to upload."
         });
         return; 
       }
+      const formImagesArray = Array.from(formImages);
       try {
         while (formImagesArray.length !== 0) {
         const formData = new FormData()
@@ -93,10 +95,24 @@ export default function ImageForm() {
       >
       <motion.form
       layout
-      onSubmit={(e:any)=>{handleSubmit(e)}} className='border-t border-r flex flex-col justify-center items-center gap-2 p-2'>
+      onSubmit={(e:any)=>{handleSubmit(e)}} className='p-2 sm:p-3 md:p-4 border-t border-r flex flex-col justify-center items-center gap-2'>
+        <motion.div layout className='w-full bg-card flex flex-col gap-2 border rounded-sm shadow-xs sm:shadow-sm md:shadow-md lg:shadow-lg shadow-blue-500 p-2'>
+
           <motion.div
           className='w-full'
           layout>
+            <Button variant={"outline"} 
+            onClick={()=>{
+              router.back();
+            }}
+            type='button'
+            className='group absolute top-2 left-2'>
+              <div className='rounded-xs p-0.5 flex transition-all duration-200 group-hover:-translate-x-1 group-active:-translate-x-2'>
+                <DynamicIcon iconName='ArrowLeft' />
+              </div>
+              Back
+            </Button>            
+            {/* Select Image */}
           <Label htmlFor='image' className='w-full flex flex-col'>
             <div className='w-full flex flex-col items-center justify-center gap-2 p-2 border'>
               <DynamicIcon iconName="Upload"/>
@@ -151,11 +167,11 @@ export default function ImageForm() {
           className='hidden'
           type="file"
           multiple={true} id="image" name="images" />
-          <div className='border w-full'>
+          <div className='border w-full hidden sm:block'>
             <div className="grid grid-cols-1 md:grid-cols-2">
               {
                 InstructionsList.map((d,key)=>(
-                <section className='p-1 ' key={key}>
+                  <section className='p-1 ' key={key}>
                   <h1 className='font-mono border p-1 text-sm'>{d.title}</h1>
                   <ol className='list-decimal text-xs border-x border-b list-inside p-1'>
                     {
@@ -172,15 +188,16 @@ export default function ImageForm() {
           <SelfDialog title='More about data:' 
           description='As you read important instructions and about your data then we want to confirm that you no need to be worried because you can store your harmless images on our website like as your personal storage. We will use your images only for your reference and will not use it anywhere else.' 
           onlyOk={true}>
-            <Button variant="outline" className='w-full'>More about</Button>
+            <Button variant="outline" type="button" className='w-full'>More about</Button>
           </SelfDialog>
           <Button type="submit"
           className='w-full'
           >
               <DynamicIcon iconName="Upload"/>Upload
           </Button>
+        </motion.div>
       </motion.form>
-      <div>
+      <div className='relative hidden md:block'>
         <Image 
         src="/unique-illustrated-image.png"
         alt='preview'

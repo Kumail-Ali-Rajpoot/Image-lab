@@ -33,7 +33,7 @@ export default function Navbar() {
           <div className='sm:size-7 size-5 md:size-10 rounded-full border bg-neutral-800 animate-pulse' />
         ) : session?.user ? (
           <div className='flex items-center gap-2'>
-          <Button onClick={async() => {
+          <Button size={"sm"} variant={"default"} onClick={async() => {
             try {
               await authClient.signOut();
               router.push("/");
