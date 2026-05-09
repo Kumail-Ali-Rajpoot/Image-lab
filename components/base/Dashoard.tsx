@@ -15,6 +15,8 @@ import Loader from "@/components/ui/self/Loader"
 import useSWR from "swr"
 import { fetcher } from "@/lib/fetcher"
 import { Drawer } from "vaul"
+import Link from "next/link";
+import { useRef } from 'react';
 
 async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
   const image = e.target.files?.[0];
@@ -30,7 +32,6 @@ async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
     console.log(data);
 }
 
-
 export default function Dashoard() {
   const [isUserAdded,setIsUserAdded] = React.useState<boolean>(false);
   const {data:session,isPending} = authClient.useSession();
@@ -40,7 +41,7 @@ export default function Dashoard() {
   const [isOpenDrawer, setIsOpenDrawer] = React.useState(false); 
   const { data:allImagesResponse, isLoading:isGetAllImagesLoading,error:allImagesError} = useSWR("/api/get-images",fetcher)
   const allImages = allImagesResponse?.success ? allImagesResponse.data : [];
-
+  const scrollToFolderRef = useRef<HTMLDivElement>(null)
   React.useEffect(() => {
     if(foldersError){
       toast(foldersError?.message || "Failed to get folders!")
@@ -168,8 +169,12 @@ export default function Dashoard() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.1, delay: 1 }} // High delay
               className='flex gap-2'>
-              <Button variant="default">Store images</Button>
-              <Button variant="outline">View folders</Button>
+              <Link href={"/protected-dashboard/folder/default/add"}>
+                <Button variant="default">Store images</Button>
+              </Link>
+              <Button variant="outline" 
+              onClick={()=>scrollToFolderRef?.current?.scrollIntoView({behavior:"smooth",block:"start"})}
+              >View folders</Button>
               </motion.div>
             </div>
 
@@ -260,7 +265,7 @@ export default function Dashoard() {
       </InfiniteLinesWrapper>
 
       <InfiniteLinesWrapper childContClassName="pt-8 pb-4">
-        <div className="flex justify-between items-end px-2">
+        <div ref={scrollToFolderRef} className="flex justify-between items-end px-2">
           <div>
             <h1
             className='text-md sm:text-lg md:text-xl flex items-center gap-2 font-bold'>
