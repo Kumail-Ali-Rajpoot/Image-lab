@@ -70,3 +70,56 @@ export default function Folder({idx, folderName, numImages}: props) {
     </motion.div>
   )
 }
+
+export function FolderLoader() {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="flex flex-col p-2 border-b border-l w-full bg-background"
+    >
+      <div className="flex items-center justify-between">
+        {/* Animated Folder Name Placeholder */}
+        <div className="flex items-center gap-2">
+          <div className="size-5 rounded bg-muted animate-pulse" />
+          <motion.div 
+            animate={{ opacity: [0.3, 0.6, 0.3] }}
+            transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+            className="h-4 w-24 bg-muted rounded" 
+          />
+        </div>
+        {/* Animated Count Placeholder */}
+        <motion.div 
+          animate={{ opacity: [0.3, 0.6, 0.3] }}
+          transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: 0.2 }}
+          className="h-3 w-12 bg-muted rounded" 
+        />
+      </div>
+
+      <div className="border-t mt-1">
+        <motion.div 
+          animate={{ opacity: [0.3, 0.6, 0.3] }}
+          transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: 0.4 }}
+          className="h-3 w-40 bg-muted rounded my-3" 
+        />
+        
+        <div className="flex gap-2 overflow-x-hidden border-t py-2">
+          {[1, 2, 3, 4].map((i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0.3 }}
+              animate={{ opacity: [0.3, 0.7, 0.3] }}
+              transition={{
+                duration: 1.5,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: i * 0.1, // Staggered effect
+              }}
+              className="size-10 rounded bg-muted"
+            />
+          ))}
+        </div>
+      </div>
+    </motion.div>
+  );
+}

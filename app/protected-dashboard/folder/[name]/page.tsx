@@ -14,6 +14,8 @@ import { toast } from "sonner";
 import useSWR from 'swr';
 import { fetcher } from '@/lib/fetcher';
 import { Drawer } from 'vaul';
+import { xs,md,sm } from '@/components/hooks/MediaQueries';
+
 interface Params {[key:string]: string}
 interface Image  {
   id: number,
@@ -31,22 +33,25 @@ interface FolderData {
 const MotionDrawer = motion.create(Drawer.Root);
 const MotionButton = motion.create(Button);
 const MotionImage = motion.create(Image);
+
+
 export default function FolderPage() {
   const params:Params = useParams();
   const [isMenuOpen,setIsMenuOpen] = React.useState<boolean>(false);
   const [isDeleteAll,setIsDeleteAll] = React.useState<boolean>(false);
   const [selectedImages,setSelectedImages] = React.useState<string[]>([]);
   const [isSelectMode,setIsSelectMode] = React.useState<boolean>(false);
-  const [deleteDisabled,setDeleteDisabled] = React.useState<boolean>(true);
+  const [deleteLoading,setDeleteLoading] = React.useState<boolean>(false);
   const [allDeleteLoading,setAllDeleteLoading] = React.useState<boolean>(false);
   const folderName:string = params.name;
+  const imageLoaders = xs?6:sm?12:md?18:20
   const handleDeleteSelected = async (publicIds:string[])=>{
     const formData = new FormData();
     if(!publicIds || publicIds.length === 0) {
       toast.error("Please select at least one image!");
       return;
     }
-    setDeleteDisabled(true)
+    setDeleteLoading(true)
     publicIds.forEach(id => {
       formData.append("publicIds",id);
     });
@@ -56,12 +61,12 @@ export default function FolderPage() {
       if(!res.ok)
         throw new Error("Failed to delete images!");
       const result = await res.json()
-      mutate(`/api/folder-images/${folderName}`)
+      mutate()
       toast.success("The images are deleted successfully!",{id:toastId})
     } catch (err:any) {
       toast.error(err.message || "Failed to delete images!",{id:toastId})
     } finally {
-      setDeleteDisabled(false);
+      setDeleteLoading(false);
       setSelectedImages([]);
       setIsSelectMode(false);
     }
@@ -77,10 +82,16 @@ export default function FolderPage() {
   const publicIds:string[] = folderData?.images.map(image => image.publicId) || [];
   const handleDeleteAll = async () =>{
     try {
-      setAllDeleteLoading(true)
+      while(publicIds.length > 0) {
+        setAllDeleteLoading(true)
       const toastId = toast.loading("Deleting all images...")
+      if(publicIds.length === 0) {
+        toast.error("No images to delete!",{id:toastId})
+        return;
+      }
+      const imagesToDelete = publicIds.splice(0,7);
       const formData = new FormData();
-      publicIds.forEach(id => {
+      imagesToDelete.forEach(id => {
         formData.append("publicIds",id);
       });
       const res = await fetch("/api/trash-images",{
@@ -97,6 +108,7 @@ export default function FolderPage() {
       }else{
         toast.error("Failed to delete images!",{id:toastId})
       }
+    }
     }catch(err:any) {
       console.log(err)
     } finally {
@@ -122,7 +134,7 @@ export default function FolderPage() {
             <Drawer.Close asChild>
               <Button variant="outline">Cancel</Button>
             </Drawer.Close>
-            <Button variant="destructive" disabled={allDeleteLoading} onClick={handleDeleteAll}>
+            <Button variant="destructive" disabled={allDeleteLoading || folderData?.images.length === 0} onClick={handleDeleteAll}>
               {allDeleteLoading?"Deleting...":"Yes, delete all"}
             </Button>
           </section>
@@ -165,18 +177,16 @@ export default function FolderPage() {
               className='flex gap-2'
               >
                 <MotionButton onClick={()=>{setSelectedImages([]);setIsSelectMode(false);}}
-                 layoutId="cancel" variant={"outline"} size={"xs"}>
+                 layoutId="cancel" variant={"outline"} size={xs?"xs":"sm"}>
                   <DynamicIcon iconName="X" className='w-4 h-4'/>
                   Cancel
                 </MotionButton>
                 <MotionButton onClick={()=>{
                   handleDeleteSelected(selectedImages);
-                  setSelectedImages([]);
-                  setIsSelectMode(false);
                 }}
                   layoutId="delete" 
-                  size={"xs"} 
-                  disabled={deleteDisabled}
+                  size={xs?"xs":"sm"} 
+                  disabled={selectedImages.length === 0 || deleteLoading}
                   variant={"destructive"}>
                   <DynamicIcon iconName="Trash2" className='w-4 h-4'/>
                   Delete Selected
@@ -197,11 +207,11 @@ export default function FolderPage() {
                  <DynamicIcon iconName="X" className='w-4 h-4' />
               </div>
             </div>
-            <Button variant={"destructive"} size={"xs"} 
+            <Button variant={"destructive"} size={xs?"xs":"sm"} 
               onClick={()=>{setIsDeleteAll(true); setIsMenuOpen(false); }}
               className='w-full justify-start gap-2'> 
               <DynamicIcon iconName="Trash2" className='w-4 h-4'/> All</Button>
-            <Button variant={"outline"} size={"xs"} 
+            <Button variant={"outline"} size={xs?"xs":"sm"} 
               onClick={()=>{setIsSelectMode(true); setIsMenuOpen(false); }}
               className='w-full justify-start gap-2'> 
               <DynamicIcon iconName="Trash" className='w-4 h-4'/> Selected</Button>
@@ -233,16 +243,42 @@ export default function FolderPage() {
         )}>
           <AnimatePresence mode='popLayout'>
           {
-            !folderData? 
-              <motion.div 
-              initial={{opacity:0}}
-              animate={{opacity:1}}
-              exit={{opacity:0}}
-              transition={{duration:0.1,ease:"easeInOut"}}
-               key={`loader`} className='flex col-span-full border h-40 items-center justify-center'>
-                <Loader />
+            !folderData?
+            // Loader which shows when data is fetching for images
+            Array.from({length:15}).map((_,index)=>( 
+              <motion.div
+                className={cn(
+                  index >= 6 && "hidden sm:block",
+                  index >= 12 && "sm:hidden md:block",
+                  index >= 18 && "md:hidden lg:block",
+                  "block"
+                )}
+                animate={{
+                  opacity: [0.3,0.6,0.3,0.6],
+                }}
+                transition={{
+                duration: 2,
+                repeat: Infinity,
+               ease: "easeInOut",
+               delay: (index) * 0.05,
+              }}
+              key={"loading-container" + index}
+              >
+                <motion.div 
+                key={"loading"+index}
+                whileHover={{scale:1.05}} transition={{duration:0.1,type:"spring", stiffness:600, damping:25}} 
+                className='relative border rounded-sm overflow-hidden aspect-video'>
+                  <section className='p-0.5 sm:p-1 text-[10px] sm:text-xs absolute top-0 left-0 z-10 w-full bg-muted/20'>
+                    <p className='line-clamp-1'></p>
+                  </section>
+                  <div
+                  className='w-full h-full bg-muted object-cover'
+                  />
+                </motion.div>
               </motion.div>
+            ))
             : folderData?.images?.length !== 0 ? folderData?.images?.map((img,index)=>(
+              // The images data preview of all images in a folder
               <motion.div
               initial={{opacity:0, scale:0.98}}
               animate={{opacity:1, scale:1}}

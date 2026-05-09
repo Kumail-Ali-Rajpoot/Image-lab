@@ -1,7 +1,7 @@
 'use client'
 import React from 'react'
 import InfiniteLinesWrapper from '../hooks/InfiniteLinesWrapper'
-import Folder from '../ui/self/Folder'
+import Folder, { FolderLoader } from '../ui/self/Folder'
 import { motion,AnimatePresence, spring } from "framer-motion";
 import Image from 'next/image'
 import { Button } from '../ui/button'
@@ -103,9 +103,20 @@ export default function Dashoard() {
               <Drawer.Description className="text-muted-foreground mb-4">
                 The folders where you store your images
               </Drawer.Description>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              <div className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-4">
               {
-                allImagesResponse?.success ? allImagesResponse.data.map((image:any,i:number)=>(
+                isGetAllImagesLoading ? (
+                  Array.from({length:14}).map((_,i)=>(
+                  <motion.div key={i}
+                    animate={{opacity:[0.3,0.6,0.3,0.6]}} 
+                    transition={{duration:2,repeat:Infinity,delay:i*0.05}} 
+                    className="flex flex-col justify-between items-center group relative min-w-36 min-h-36 overflow-hidden rounded-lg border border-border bg-muted/50 cursor-pointer shadow-sm animate-pulse">
+                      <div className="w-full h-full relative overflow-hidden">
+                      <div className="w-full h-full bg-muted" />
+                    </div>
+                  </motion.div>
+                  ))
+                ) : allImagesResponse?.success ? allImagesResponse.data.map((image:any,i:number)=>(
               <motion.div key={i} initial={{opacity:0}} whileInView={{opacity:1,}} 
             viewport={{once:true}}
             exit={{opacity:0}} 
@@ -204,27 +215,29 @@ export default function Dashoard() {
         <main className='w-full flex scrollbar-hide overflow-x-auto gap-3 px-2'>
           <AnimatePresence mode='popLayout'>
           {
-            isGetImagesLoading ?(
-              <motion.div initial={{opacity:0}} animate={{opacity:1}}
-              viewport={{once:true}}
-              exit={{opacity:0}}
-              transition={{duration:0.1,type:"spring",stiffness:100,damping:15}} 
-              className="flex items-center justify-center w-full col-span-full">
-                <Loader />
-              </motion.div>
-          ) : 
+            isGetImagesLoading ?
+              Array.from({length:10}).map((_,index)=>(
+                <motion.div key={index} animate={{
+                  opacity:[0.3,0.6,0.3,0.6]
+                }}
+                transition={{duration:1.8,ease:"easeInOut",repeat:Infinity,delay:index * 0.05}}
+                className="group relative w-36 h-36 flex-shrink-0 flex items-start overflow-hidden rounded-lg border border-border bg-muted/50 cursor-pointer shadow-sm">
+                  <div className="w-full h-full bg-muted" />
+                </motion.div>
+              ))
+          : 
           recentImages && recentImages.length > 0 ?
           recentImages.map((image:any, i:number) => (
             <motion.div key={i} initial={{opacity:0}} whileInView={{opacity:1,}} 
             viewport={{once:true}}
             exit={{opacity:0}} 
             transition={{duration:0.1,type:"spring",stiffness:100,damping:15}} 
-            className="group relative min-w-36 min-h-36 overflow-hidden rounded-lg border border-border bg-muted/50 cursor-pointer shadow-sm">
+            className="group relative w-36 h-36 flex-shrink-0 flex items-start overflow-hidden rounded-lg border border-border bg-muted/50 cursor-pointer shadow-sm">
               <Image src={image.url} 
               width={400}
               height={400}
               unoptimized
-              className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-110" alt="Dashboard image" />
+              className="aspect-square object-cover w-full h-full transition-transform duration-500 group-hover:scale-110" alt="Dashboard image" />
               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center backdrop-blur-[2px]">
                 <Button size="icon" variant="secondary" className="size-8 rounded-full shadow-md scale-50 group-hover:scale-100 transition-transform duration-300">
                   <DynamicIcon iconName="Eye" className="size-4" />
@@ -269,7 +282,11 @@ export default function Dashoard() {
         <motion.main layout className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 w-full border-t border-r border-border'>
             <AnimatePresence>
             {
-              !folders ? <Loader/> :
+              !folders ? 
+              Array.from({length:12}).map((_,i)=>(
+                <FolderLoader key={i} />
+              ))
+               :
               folders && folders.length > 0 ? folders.map((folder:any,i:number) => (
                 <Folder key={i} idx={i} folderName={folder.name} numImages={folder?.images?.length} />
               )) : (
