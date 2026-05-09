@@ -29,11 +29,20 @@ Image Lab is built on a modern, robust, and scalable technology stack. Here's a 
 - **Image Hosting (Cloudinary & Next Cloudinary)**: All uploaded media is securely stored on Cloudinary. The frontend uses `next-cloudinary` for optimized image rendering, lazy loading, and on-the-fly transformations.
 - **State Management (Zustand & SWR)**: Client-side state is efficiently managed with Zustand, while SWR handles data fetching, caching, and revalidation.
 
+## 🎨 User Interface (UI) Design
+
+The user interface of Image Lab is designed with modern aesthetics and usability in mind:
+- **Clean & Minimalist Layout**: The UI avoids clutter, using generous whitespace and clean lines to keep the user's focus on their images.
+- **Dark/Light Mode Support**: Built with `next-themes` and Shadcn UI, the application seamlessly adapts to the user's system preferences, offering a sleek dark mode for comfortable viewing.
+- **Responsive Layouts**: Fully responsive grids and flexbox designs ensure a consistent and intuitive experience across desktops, tablets, and mobile devices.
+- **Glassmorphism & Gradients**: Subtle background blurs and carefully selected color gradients are used in key areas (like modals and navigation) to provide a premium, modern feel.
+
 ## 💫 Animations & Skeleton Loading
 
 A core focus of Image Lab is delivering a premium, highly responsive user experience:
 
 - **Animations (Framer Motion)**: We utilize `framer-motion` for complex, fluid, and physics-based animations (such as the centering and transitions of modals, smooth page load reveals, and dynamic list interactions). 
+- **Exit Animations**: We heavily leverage Framer Motion's `AnimatePresence` to enable smooth exit animations. When elements like modals or image cards are removed from the DOM, they don't disappear abruptly. Instead, they fade out or scale down gracefully, maintaining a polished and seamless feel.
 - **Micro-interactions (Tailwind & tw-animate-css)**: Subtle hover effects, button scaling, and minor layout transitions are handled natively through Tailwind CSS and `tw-animate-css` for minimal performance overhead.
 - **Skeleton Loading States**: To ensure the user interface feels fast and never "jumps" or leaves users staring at blank screens, we implement Skeleton Loading screens. During data fetches (e.g., loading folders or images), placeholder skeleton elements matching the shape of the incoming data are displayed. This prevents cumulative layout shift (CLS) and offers a perceived performance boost, keeping the user engaged while asynchronous operations finish.
 
@@ -96,8 +105,7 @@ Create a `.env` file in the root directory. The application requires the followi
 - `CLOUDINARY_API_SECRET`: Your Cloudinary account's API secret.
 - `CLOUDINARY_URL`: The full connection string for Cloudinary. Format: `cloudinary://[API_KEY]:[API_SECRET]@[CLOUD_NAME]`.
 
-### AI Integrations
-- `OPENAI_API_KEY` (Optional): API key for OpenAI functionalities if you are utilizing AI features.
+
 
 ---
 
