@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
     }
 
     try {
-        const { folderName } = await req.json();
+        let { folderName } = await req.json();
         const folderExists = await prisma.folder.findFirst({
             where:{
                 name:folderName,

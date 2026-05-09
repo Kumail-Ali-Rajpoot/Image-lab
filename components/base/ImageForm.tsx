@@ -33,7 +33,7 @@ const InstructionsList = [
 export default function ImageForm() {
   const router = useRouter();
   const params = useParams();
-  const folderName = params.name;
+  const folderName = decodeURIComponent(params.name as string);
   const [choosenImages,setChoosenImages] = React.useState<string[] | null>(null)
   const [rawImagesData,setRawImagesData] = React.useState<File[] | null>(null)
   const [isLoading,setIsLoading] = React.useState<boolean>(false)

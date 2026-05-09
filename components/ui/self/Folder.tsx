@@ -15,7 +15,7 @@ interface props {
 }
 
 export default function Folder({idx, folderName, numImages}: props) {
-  const {data:folderImages, isLoading:isFolderImagesLoading,error:folderImagesError} = useSWR(`/api/folder-images?folder-name=${folderName}&numOfImages=4`,fetcher);
+  const {data:folderImages, isLoading:isFolderImagesLoading,error:folderImagesError} = useSWR(`/api/folder-images?folder-name=${encodeURIComponent(folderName)}&numOfImages=4`,fetcher);
   const images = folderImages?.data?.images || [];
   if(folderImagesError)
     toast.error("The folder images are not fetched");

@@ -43,7 +43,7 @@ export default function FolderPage() {
   const [isSelectMode,setIsSelectMode] = React.useState<boolean>(false);
   const [deleteLoading,setDeleteLoading] = React.useState<boolean>(false);
   const [allDeleteLoading,setAllDeleteLoading] = React.useState<boolean>(false);
-  const folderName:string = params.name;
+  const folderName:string = decodeURIComponent(params.name as string);
   const imageLoaders = xs?6:sm?12:md?18:20
   const handleDeleteSelected = async (publicIds:string[])=>{
     const formData = new FormData();
@@ -72,7 +72,7 @@ export default function FolderPage() {
     }
   }
   
-  const {data:response,isLoading:folderLoading,error:folderError,mutate} = useSWR(`/api/folder-images?folder-name=${folderName}`,fetcher)
+  const {data:response,isLoading:folderLoading,error:folderError,mutate} = useSWR(`/api/folder-images?folder-name=${encodeURIComponent(folderName)}`,fetcher)
   const folderData = response?.data as FolderData | undefined;
   if(folderError){
     toast.error("Failed to fetch folder images",{
@@ -150,7 +150,7 @@ export default function FolderPage() {
             <Image 
             className='w-15 sm:w-20'
             src={"/logo.png"} alt="logo" width={100} height={100} />
-            <Link href={`/protected-dashboard/folder/${folderName}/add`}>
+            <Link href={`/protected-dashboard/folder/${encodeURIComponent(folderName)}/add`}>
               <Button size={"sm"} className='md:scale-100 sm:scale-90 scale-75'><DynamicIcon iconName="Image"/>Add Images</Button>
             </Link>
           </nav>
