@@ -377,13 +377,13 @@ export default function FolderPage() {
               height={1000}
               unoptimized
               alt='image preview' 
-              className='object-contain w-full max-h-[99%]'/>
+              className='object-contain w-[98%]'/>
               <motion.section 
               initial={{clipPath:"inset(20% 0 20% 0)", opacity:0}}
               animate={{clipPath:"inset(0% 0 0% 0)", opacity:1}}
               transition={{duration:0.3,delay:0.2}}
               exit={{clipPath:"inset(20% 0 20% 0)", opacity:0,transition:{duration:0.1}}}
-              className="w-md bg-card flex flex-col gap-2">
+              className="w-fit bg-card flex flex-col gap-2">
                 <h3 className="text-md p-2 font-bold">{imageName}</h3>
               </motion.section>  
               <br />
