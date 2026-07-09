@@ -122,7 +122,7 @@ export default function Dashoard() {
             viewport={{once:true}}
             exit={{opacity:0}} 
             transition={{duration:0.1,type:"spring",stiffness:100,damping:15}} 
-            className="group relative min-w-36 min-h-36 overflow-hidden rounded-lg border border-border bg-muted/50 cursor-pointer shadow-sm">
+            className="group relative aspect-square sm:min-w-36 sm:min-h-36 overflow-hidden rounded-lg border border-border bg-muted/50 cursor-pointer shadow-sm">
               <Image src={image.url} 
               width={400}
               height={400}
@@ -216,8 +216,8 @@ export default function Dashoard() {
         </div>
       </InfiniteLinesWrapper>
         {/* Recent images uploaded by user */}
-      <InfiniteLinesWrapper childContClassName="pb-8">
-        <main className='w-full flex scrollbar-hide overflow-x-auto gap-3 px-2'>
+      <InfiniteLinesWrapper childContClassName="py-2">
+        <main className='w-full flex items-center scrollbar-hide overflow-x-auto gap-3 px-2'>
           <AnimatePresence mode='popLayout'>
           {
             isGetImagesLoading ?
@@ -232,12 +232,12 @@ export default function Dashoard() {
               ))
           : 
           recentImages && recentImages.length > 0 ?
-          recentImages.map((image:any, i:number) => (
+          recentImages.toReversed().map((image:any, i:number) => (
             <motion.div key={i} initial={{opacity:0}} whileInView={{opacity:1,}} 
             viewport={{once:true}}
             exit={{opacity:0}} 
             transition={{duration:0.1,type:"spring",stiffness:100,damping:15}} 
-            className="group relative w-36 h-36 flex-shrink-0 flex items-start overflow-hidden rounded-lg border border-border bg-muted/50 cursor-pointer shadow-sm">
+            className="group relative w-20 h-20 sm:w-36 sm:h-36 flex-shrink-0 flex items-start overflow-hidden rounded-lg border border-border bg-muted/50 cursor-pointer shadow-sm">
               <Image src={image.url} 
               width={400}
               height={400}

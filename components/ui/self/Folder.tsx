@@ -34,10 +34,10 @@ export default function Folder({idx, folderName, numImages}: props) {
         'no-underline text-inherit'
       )}
     >
-        <div className='flex items-center justify-between'>
+        <div className='flex items-center line-clamp-1 justify-between'>
           {/* Folder Name */}
-            <p className='flex items-center gap-2 capitalize'>
-              <DynamicIcon iconName='Folder' className='size-5' />
+            <p className='flex items-center gap-2 text-xs line-clamp-1 sm:text-sm capitalize'>
+              <DynamicIcon iconName='Folder' className='size-3 sm:size-5' />
               {folderName}
             </p>
             <p className='text-xs text-muted-foreground'>images: {images?.length || 0}</p>

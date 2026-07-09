@@ -131,6 +131,17 @@
   * {
     @apply border-border outline-ring/50;
   }
+  ::-webkit-scrollbar {
+  display: none;
+}
+* {
+  scrollbar-width: none;
+}
+
+/* Internet Explorer and old Edge */
+* {
+  -ms-overflow-style: none;
+}
   body {
     @apply bg-background text-foreground;
   }

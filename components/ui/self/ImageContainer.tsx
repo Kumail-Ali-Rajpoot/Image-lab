@@ -39,13 +39,13 @@ export default function ImageContainer({ imgUrl, idx = 0, left, right, top, bott
         transition: { duration: 0.2 } 
       }}
       className={cn(
-        'absolute rounded-xl will-change-transform overflow-hidden shadow-2xl border border-white/10 z-0',
-      )}
-      style={{
+        'absolute rounded-xl sm:scale-75 md:scale-100 scale-50 will-change-transform overflow-hidden shadow-2xl border border-white/10 z-0',
         left,
         right,
         top,
         bottom,
+      )}
+      style={{
         width: size || '150px',
         height: size || '150px',
       }}

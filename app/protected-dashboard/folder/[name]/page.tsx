@@ -15,7 +15,6 @@ import useSWR from 'swr';
 import { fetcher } from '@/lib/fetcher';
 import { Drawer } from 'vaul';
 import { xs,md,sm } from '@/components/hooks/MediaQueries';
-
 interface Params {[key:string]: string}
 interface Image  {
   id: number,
@@ -45,6 +44,8 @@ export default function FolderPage() {
   const [allDeleteLoading,setAllDeleteLoading] = React.useState<boolean>(false);
   const folderName:string = decodeURIComponent(params.name as string);
   const imageLoaders = xs?6:sm?12:md?18:20
+  const [imagePreview,setImagePreview] = React.useState<string>("");
+  const [imageName,setImageName] = React.useState<string>("")
   const handleDeleteSelected = async (publicIds:string[])=>{
     const formData = new FormData();
     if(!publicIds || publicIds.length === 0) {
@@ -277,7 +278,7 @@ export default function FolderPage() {
                 </motion.div>
               </motion.div>
             ))
-            : folderData?.images?.length !== 0 ? folderData?.images?.map((img,index)=>(
+            : folderData?.images?.length !== 0 ? folderData?.images?.toReversed().map((img,index)=>(
               // The images data preview of all images in a folder
               <motion.div
               initial={{opacity:0, scale:0.98}}
@@ -287,7 +288,11 @@ export default function FolderPage() {
               key={img.id}
               >
                 <motion.div onClick={()=>{
-                  if(!isSelectMode) return;
+                  if(!isSelectMode) {
+                    setImagePreview(img.url as string);
+                    setImageName(img.name as string)
+                    return
+                  }
                       const images = [...selectedImages];
                       if(images.includes(img.publicId as string)) {
                         const newImagesData = images.filter(data=> data !== img.publicId)
@@ -301,7 +306,7 @@ export default function FolderPage() {
                 layout
                 key={img.publicId}
                 whileHover={{scale:1.05}} transition={{duration:0.1,type:"spring", stiffness:600, damping:25}} 
-                className='relative border rounded-sm overflow-hidden aspect-video'>
+                className='relative border cursor-pointer rounded-sm group-container group aspect-square'>
                   <section className='p-0.5 sm:p-1 text-[10px] sm:text-xs absolute top-0 left-0 z-10 w-full bg-muted/20'>
                     <p className='line-clamp-1'>{img.name}</p>
                   </section>
@@ -309,18 +314,24 @@ export default function FolderPage() {
                   layout
                   src={img.url} 
                   alt={"Image"}
-                  className='w-full h-full object-cover'
+                  className='w-full h-full group-hover:blur-sm object-cover'
                   width={400}
                   height={400}
                   key={index}
                   unoptimized
                   />
+                  <div className="absolute inset-0 bg-background/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center backdrop-blur-[2px]">
+                    <Button size="icon" variant="secondary" className="size-8 rounded-full shadow-md scale-50 group-hover:scale-100 transition-transform duration-300">
+                      <DynamicIcon iconName="Eye" className="size-4" />
+                    </Button>
+                  </div>
                   {
                     isSelectMode &&
                     <Checkbox checked={selectedImages.includes(img.publicId as string)}
                     className='rounded-full absolute bottom-2 right-2 scale-100 sm:scale-125'  
                     />
                   }
+                  
                 </motion.div>
               </motion.div>
             ))
@@ -335,6 +346,52 @@ export default function FolderPage() {
           </AnimatePresence>
         </motion.div>
       </InfiniteLinesWrapper>
+      <AnimatePresence mode='wait'>
+      {
+        imagePreview !== "" ? imagePreview &&
+        
+        (<motion.div
+         initial={{opacity:0,filter:"blur(10px)",clipPath:"inset(20% 0 20% 0)"}}
+         animate={{opacity:1,filter:"blur(0px)",clipPath:"inset(0% 0 0% 0)"}}
+         exit={{opacity:0,filter:"blur(10px)",clipPath:"inset(20% 0 20% 0)"}}
+         transition={{duration:0.3,ease:"easeInOut"}}
+         className='w-full h-screen fixed overflow-y-auto flex justify-center top-0 left-0 bg-background/40 backdrop-blur-xs py-4 px-8 z-[1000]'>
+            <motion.div
+            initial={{scale:0}}
+            animate={{scale:1}}
+            transition={{duration:0.3,delay:0.05}}
+            exit={{scale:0,transition:{duration:0.1}}}
+            onClick={()=>setImagePreview("")}
+            className='absolute top-2 right-2 group z-10 bg-white/10 hover:bg-white/50 transition-all duration-300 backdrop-blur-xs p-2 rounded-full cursor-pointer'>
+              <DynamicIcon iconName="X" className='group-hover:scale-125 transition-all duration-300'/>
+            </motion.div>
+            <motion.div 
+            initial={{scale:0.5}}
+            animate={{scale:1}}
+            transition={{duration:0.4}}
+            exit={{scale:0.5,transition:{duration:0.2}}}
+            className='flex flex-col gap-2'>
+              <Image src={imagePreview} priority={true} 
+              fetchPriority='high' 
+              width={1000}
+              height={1000}
+              unoptimized
+              alt='image preview' 
+              className='object-contain w-full max-h-[99%]'/>
+              <motion.section 
+              initial={{clipPath:"inset(20% 0 20% 0)", opacity:0}}
+              animate={{clipPath:"inset(0% 0 0% 0)", opacity:1}}
+              transition={{duration:0.3,delay:0.2}}
+              exit={{clipPath:"inset(20% 0 20% 0)", opacity:0,transition:{duration:0.1}}}
+              className="w-md bg-card flex flex-col gap-2">
+                <h3 className="text-md p-2 font-bold">{imageName}</h3>
+              </motion.section>  
+              <br />
+            </motion.div>
+        </motion.div>)
+        : ""
+      }
+      </AnimatePresence>
     </div>
   )
 }
