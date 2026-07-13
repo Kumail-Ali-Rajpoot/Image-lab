@@ -71,12 +71,13 @@ export default function Page() {
     parentContClassName='border-t'
     childContClassName='p-0 overflow-hidden relative'
     >
+        {/* First sliding image */}
         <div className='absolute h-full w-full'>
             <Image src="/illustrated-landscape.png" 
                 width={1000}
                 height={1000}
                 className='w-full h-screen object-fill'
-                unoptimized
+                fetchPriority='high'
                 alt="image-lines" 
                 />
         </div>
@@ -136,12 +137,13 @@ export default function Page() {
                         </main>
                     </motion.form>
                 </section>
+                {/* second container containing image for interface */}
                 <section className='border-l'>
                     <Image src="/unique-illustrated-image.png" 
                     width={1000}
                     height={1000}
                     className='w-full h-screen object-fill'
-                    unoptimized
+                    fetchPriority='high'
                     alt="image-lines" 
                     />
                 </section>

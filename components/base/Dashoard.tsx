@@ -189,7 +189,6 @@ export default function Dashoard() {
             height={10000}
             src="/storage-systems.png"
             alt="image-lines"
-            unoptimized
             fetchPriority='high'
             className=''
             />
