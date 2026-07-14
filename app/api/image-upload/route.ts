@@ -22,15 +22,24 @@ export async function POST(req: NextRequest) {
         const images = formData.getAll("images") as File[];
         // const imagesArray = Array.from(images) as File[];
         const folderName = formData.get("folderName") as string;
+        if(!folderName) {
+            return NextResponse.json({success:false,error:"Folder name is required"},{status:400})
+        }
+        // BUG 1 FIX: scope folder lookup to the current user's email so images
+        // never get attached to another user's folder.
         const folder = await prisma.folder.findFirst({
             where:{
-                name:folderName,
+                name: folderName,
+                userEmail: userEmail, // ← critical: only search THIS user's folders
             },
             select:{
                 id:true,
             }
         })
-        const folderId = folder?.id;
+        if(!folder?.id) {
+            return NextResponse.json({success:false,error:`Folder "${folderName}" not found for your account`},{status:404})
+        }
+        const folderId = folder.id;
         const uploadPromise:any[] = images.map(async(image: File)=>{
             const buffer = Buffer.from(await image.arrayBuffer())
             const imageName = image.name;
