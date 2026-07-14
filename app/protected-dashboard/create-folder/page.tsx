@@ -73,10 +73,16 @@ export default function Page() {
     >
         {/* First sliding image */}
         <div className='absolute h-full w-full'>
-            <Image src="/illustrated-landscape.png" 
+            <Image src="/folder-preview-image.png" 
                 width={1000}
                 height={1000}
-                className='w-full h-screen object-fill'
+                className='w-full h-screen object-contain'
+                style={{
+                    maskImage:"linear-gradient(to right,transparent,white,transparent),linear-gradient(to bottom,transparent,white,transparent)",
+                    WebkitMaskImage:"linear-gradient(to right,transparent,white,transparent),linear-gradient(to bottom,transparent,white,transparent)",
+                    maskComposite: "intersect",
+                    WebkitMaskComposite: "source-in"
+                }}
                 fetchPriority='high'
                 alt="image-lines" 
                 />
@@ -103,7 +109,7 @@ export default function Page() {
                         <DynamicIcon iconName='ArrowLeft'/> Back
                     </Button>
                 </div>
-                <section className='flex border-r justify-center items-center'>
+                <section className='flex border-r border-cyan-800/40 justify-center items-center'>
                     <motion.form
                     style={{
                         boxShadow
@@ -139,9 +145,15 @@ export default function Page() {
                 </section>
                 {/* second container containing image for interface */}
                 <section className='border-l'>
-                    <Image src="/unique-illustrated-image.png" 
+                    <Image src="/slider-preview-image-portrait.png" 
                     width={1000}
                     height={1000}
+                    style={{
+                    maskImage:"linear-gradient(to right,transparent,white,transparent),linear-gradient(to bottom,transparent,white,transparent)",
+                    WebkitMaskImage:"linear-gradient(to right,transparent,white,transparent),linear-gradient(to bottom,transparent,white,transparent)",
+                    maskComposite: "intersect",
+                    WebkitMaskComposite: "source-in"
+                    }}                
                     className='w-full h-screen object-fill'
                     fetchPriority='high'
                     alt="image-lines" 

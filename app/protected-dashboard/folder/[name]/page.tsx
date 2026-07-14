@@ -239,52 +239,36 @@ export default function FolderPage() {
       childContClassName='relative'
       >
         <motion.div layout
-        className={cn("min-h-screen w-full gap-0.5 sm:gap-2 md:gap-4 p-0.5 sm:p-2 content-start",
-        folderData?.images?.length !== 0 ? "grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5" : "grid grid-cols-1"
+        className={cn("min-h-screen w-full gap-1.5 sm:gap-2.5 md:gap-4 p-1 sm:p-2 content-start",
+        folderData?.images?.length !== 0 ? "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4" : "grid grid-cols-1"
         )}>
           <AnimatePresence mode='popLayout'>
           {
             !folderData?
-            // Loader which shows when data is fetching for images
-            Array.from({length:15}).map((_,index)=>( 
+            // Loader skeletons — landscape
+            Array.from({length:12}).map((_,index)=>( 
               <motion.div
                 className={cn(
                   index >= 6 && "hidden sm:block",
-                  index >= 12 && "sm:hidden md:block",
-                  index >= 18 && "md:hidden lg:block",
+                  index >= 9 && "sm:hidden md:block",
                   "block"
                 )}
-                animate={{
-                  opacity: [0.3,0.6,0.3,0.6],
-                }}
-                transition={{
-                duration: 2,
-                repeat: Infinity,
-               ease: "easeInOut",
-               delay: (index) * 0.05,
-              }}
-              key={"loading-container" + index}
+                animate={{ opacity: [0.3,0.6,0.3,0.6] }}
+                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut", delay: index * 0.05 }}
+                key={"loading-container" + index}
               >
-                <motion.div 
-                key={"loading"+index}
-                whileHover={{scale:1.05}} transition={{duration:0.1,type:"spring", stiffness:600, damping:25}} 
-                className='relative border rounded-sm overflow-hidden aspect-video'>
-                  <section className='p-0.5 sm:p-1 text-[10px] sm:text-xs absolute top-0 left-0 z-10 w-full bg-muted/20'>
-                    <p className='line-clamp-1'></p>
-                  </section>
-                  <div
-                  className='w-full h-full bg-muted object-cover'
-                  />
-                </motion.div>
+                <div className='relative border border-cyan-800/30 rounded-lg overflow-hidden aspect-video bg-muted'>
+                  {/* shimmer name bar */}
+                  <div className='absolute bottom-0 left-0 z-10 w-full h-7 bg-muted/60 animate-pulse' />
+                </div>
               </motion.div>
             ))
             : folderData?.images?.length !== 0 ? folderData?.images?.toReversed().map((img,index)=>(
-              // The images data preview of all images in a folder
               <motion.div
-              initial={{opacity:0, scale:0.98}}
-              animate={{opacity:1, scale:1}}
-              exit={{opacity:0, scale:0}}
-              transition={{duration:0.1,delay:0.1,ease:"easeInOut"}}
+              initial={{opacity:0, y:10}}
+              animate={{opacity:1, y:0}}
+              exit={{opacity:0, scale:0.95}}
+              transition={{duration:0.18, delay: index * 0.03, type:"spring", stiffness:280, damping:22}}
               key={img.id}
               >
                 <motion.div onClick={()=>{
@@ -293,54 +277,53 @@ export default function FolderPage() {
                     setImageName(img.name as string)
                     return
                   }
-                      const images = [...selectedImages];
-                      if(images.includes(img.publicId as string)) {
-                        const newImagesData = images.filter(data=> data !== img.publicId)
-                        setSelectedImages(newImagesData)
-                      }else{
-                        images.push(img.publicId as string)
-                        setSelectedImages(images)
-                      }
-                      console.log(selectedImages)
-                    }}
+                  const images = [...selectedImages];
+                  if(images.includes(img.publicId as string)) {
+                    setSelectedImages(images.filter(d => d !== img.publicId))
+                  } else {
+                    setSelectedImages([...images, img.publicId as string])
+                  }
+                }}
                 layout
                 key={img.publicId}
-                whileHover={{scale:1.05}} transition={{duration:0.1,type:"spring", stiffness:600, damping:25}} 
-                className='relative border cursor-pointer rounded-sm group-container group aspect-square'>
-                  <section className='p-0.5 sm:p-1 text-[10px] sm:text-xs absolute top-0 left-0 z-10 w-full bg-muted/20'>
-                    <p className='line-clamp-1'>{img.name}</p>
-                  </section>
+                whileHover={{scale:1.03, y:-2}}
+                transition={{duration:0.12, type:"spring", stiffness:500, damping:22}}
+                className='relative border border-cyan-800/30 shadow-sm shadow-cyan-900/20 cursor-pointer rounded-lg group overflow-hidden aspect-video'>
                   <MotionImage
                   layout
-                  src={img.url} 
-                  alt={"Image"}
-                  className='w-full h-full group-hover:blur-sm object-cover'
-                  width={400}
+                  src={img.url}
+                  alt={img.name}
+                  className='w-full h-full object-cover transition-transform duration-500 group-hover:scale-105'
+                  width={600}
                   height={400}
                   key={index}
                   unoptimized
                   />
-                  <div className="absolute inset-0 bg-background/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center backdrop-blur-[2px]">
-                    <Button size="icon" variant="secondary" className="size-8 rounded-full shadow-md scale-50 group-hover:scale-100 transition-transform duration-300">
+                  {/* bottom name bar — always visible */}
+                  <div className="absolute bottom-0 left-0 right-0 z-10 px-2 py-1.5 bg-muted/40">
+                    <p className='text-[10px] sm:text-xs text-white/90 font-medium line-clamp-1 drop-shadow'>{img.name}</p>
+                  </div>
+                  {/* hover overlay with Eye */}
+                  <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center backdrop-blur-[1px]">
+                    <Button size="icon" variant="custom" className="size-8 rounded-full shadow-lg scale-50 group-hover:scale-100 transition-transform duration-200">
                       <DynamicIcon iconName="Eye" className="size-4" />
                     </Button>
                   </div>
                   {
                     isSelectMode &&
                     <Checkbox checked={selectedImages.includes(img.publicId as string)}
-                    className='rounded-full absolute bottom-2 right-2 scale-100 sm:scale-125'  
+                    className='rounded-full absolute bottom-2 right-2 scale-100 sm:scale-125'
                     />
                   }
-                  
                 </motion.div>
               </motion.div>
             ))
             : (
-              <div className="flex flex-col items-center justify-center border">
-                    <Image src={"/no-image-question-mark.png"} alt="Image question mark" fetchPriority='high' width={400} height={400} />
-                    <h3 className="text-sm p-2 font-bold text-muted-foreground">No images data found in this folder!</h3>
-                    <p className='text-xs text-muted-foreground p-2'>To add images click on "Add Images" button in the top right corner!</p>
-                  </div>
+              <div className="flex flex-col items-center justify-center border rounded-xl p-10 col-span-full">
+                <Image src={"/no-image-question-mark.png"} alt="No images" fetchPriority='high' width={200} height={200} className="opacity-60" />
+                <h3 className="text-sm mt-4 font-bold text-muted-foreground">No images found in this folder</h3>
+                <p className='text-xs text-muted-foreground mt-1'>Click "Add Images" in the top right to get started.</p>
+              </div>
             )
           }
           </AnimatePresence>
@@ -348,48 +331,60 @@ export default function FolderPage() {
       </InfiniteLinesWrapper>
       <AnimatePresence mode='wait'>
       {
-        imagePreview !== "" ? imagePreview &&
-        
-        (<motion.div
-         initial={{opacity:0,filter:"blur(10px)",clipPath:"inset(20% 0 20% 0)"}}
-         animate={{opacity:1,filter:"blur(0px)",clipPath:"inset(0% 0 0% 0)"}}
-         exit={{opacity:0,filter:"blur(10px)",clipPath:"inset(20% 0 20% 0)"}}
-         transition={{duration:0.3,ease:"easeInOut"}}
-         className='w-full h-screen fixed overflow-y-auto flex justify-center top-0 left-0 bg-background/40 backdrop-blur-xs py-4 px-8 z-[1000]'>
+        imagePreview !== "" && (
+        <motion.div
+         initial={{opacity:0}}
+         animate={{opacity:1}}
+         exit={{opacity:0}}
+         transition={{duration:0.2,ease:"easeInOut"}}
+         onClick={()=>setImagePreview("")}
+         className='w-full h-screen fixed inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm z-[1000] p-4'>
+            {/* Close button */}
             <motion.div
-            initial={{scale:0}}
-            animate={{scale:1}}
-            transition={{duration:0.3,delay:0.05}}
-            exit={{scale:0,transition:{duration:0.1}}}
-            onClick={()=>setImagePreview("")}
-            className='absolute top-2 right-2 group z-10 bg-white/10 hover:bg-white/50 transition-all duration-300 backdrop-blur-xs p-2 rounded-full cursor-pointer'>
-              <DynamicIcon iconName="X" className='group-hover:scale-125 transition-all duration-300'/>
+            initial={{opacity:0, scale:0.7}}
+            animate={{opacity:1, scale:1}}
+            exit={{opacity:0, scale:0.7}}
+            transition={{duration:0.15, delay:0.05, type:"spring", stiffness:400, damping:22}}
+            onClick={(e)=>{e.stopPropagation(); setImagePreview("");}}
+            className='absolute top-3 right-3 z-10 bg-white/10 hover:bg-cyan-800/60 border border-white/20 hover:border-cyan-700/60 transition-all duration-200 backdrop-blur-sm p-2 rounded-full cursor-pointer group'>
+              <DynamicIcon iconName="X" className='size-4 text-white group-hover:rotate-90 transition-transform duration-200'/>
             </motion.div>
-            <motion.div 
-            initial={{scale:0.5}}
-            animate={{scale:1}}
-            transition={{duration:0.4}}
-            exit={{scale:0.5,transition:{duration:0.2}}}
-            className='flex flex-col gap-2'>
-              <Image src={imagePreview} priority={true} 
-              fetchPriority='high' 
-              width={1000}
-              height={1000}
-              unoptimized
-              alt='image preview' 
-              className='object-contain max-h-[96vh] w-[98%]'/>
-              <motion.section 
-              initial={{clipPath:"inset(20% 0 20% 0)", opacity:0}}
-              animate={{clipPath:"inset(0% 0 0% 0)", opacity:1}}
-              transition={{duration:0.3,delay:0.2}}
-              exit={{clipPath:"inset(20% 0 20% 0)", opacity:0,transition:{duration:0.1}}}
-              className="w-fit bg-card flex flex-col gap-2">
-                <h3 className="text-md p-2 font-bold">{imageName}</h3>
-              </motion.section>  
-              <br />
+
+            {/* Image card */}
+            <motion.div
+            initial={{opacity:0, scale:0.88, y:24}}
+            animate={{opacity:1, scale:1, y:0}}
+            exit={{opacity:0, scale:0.88, y:24}}
+            transition={{duration:0.25, type:"spring", stiffness:320, damping:26}}
+            onClick={(e)=>e.stopPropagation()}
+            className='flex flex-col rounded-xl overflow-hidden border border-cyan-800/40 shadow-2xl shadow-black/60 max-w-4xl w-full max-h-[92vh]'>
+              <div className='relative overflow-hidden flex-1'>
+                <Image
+                src={imagePreview}
+                priority={true}
+                fetchPriority='high'
+                width={1200}
+                height={800}
+                unoptimized
+                alt='image preview'
+                className='object-contain w-full max-h-[80vh]'
+                />
+              </div>
+              {/* Footer name bar */}
+              <motion.div
+              initial={{opacity:0, y:10}}
+              animate={{opacity:1, y:0}}
+              exit={{opacity:0, y:10}}
+              transition={{duration:0.2, delay:0.12}}
+              className="flex items-center justify-between gap-2 px-4 py-2.5 bg-black/60 backdrop-blur-sm border-t border-cyan-800/30">
+                <div className="flex items-center gap-2 min-w-0">
+                  <DynamicIcon iconName="Image" className="size-3.5 text-cyan-500 shrink-0" />
+                  <p className="text-xs sm:text-sm font-semibold text-white/90 truncate">{imageName}</p>
+                </div>
+                <span className="text-[10px] text-white/40 shrink-0">Click outside to close</span>
+              </motion.div>
             </motion.div>
         </motion.div>)
-        : ""
       }
       </AnimatePresence>
     </div>

@@ -42,6 +42,8 @@ export default function Dashoard() {
   const [isOpenDrawer, setIsOpenDrawer] = React.useState(false); 
   const { data:allImagesResponse, isLoading:isGetAllImagesLoading,error:allImagesError} = useSWR("/api/get-images",fetcher)
   const allImages = allImagesResponse?.success ? allImagesResponse.data : [];
+  const [imagePreview, setImagePreview] = React.useState<string>("");
+  const [imageName, setImageName] = React.useState<string>("");
   const scrollToFolderRef = useRef<HTMLDivElement>(null)
   React.useEffect(() => {
     if(foldersError){
@@ -92,51 +94,70 @@ export default function Dashoard() {
   }, [session, isPending, router]);
   return (
     <div className="flex flex-col w-full pb-10">
-      <Drawer.Root open={isOpenDrawer} onOpenChange={setIsOpenDrawer}>
+      <Drawer.Root open={isOpenDrawer} onOpenChange={(open) => {
+        // Prevent closing the drawer if the image preview modal is active
+        if (!open && imagePreview !== "") return;
+        setIsOpenDrawer(open);
+      }}>
         <Drawer.Portal>
-          <Drawer.Overlay className='fixed inset-0 bg-muted-foreground/10 z-50' />
-          <Drawer.Content className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[80%] bg-background rounded-t-xl z-50 flex flex-col">
-            {/* The "Handle" for the drawer (Optional but recommended for Vaul) */}
-            <div className="mx-auto w-12 h-1.5 flex-shrink-0 rounded-full bg-muted my-4" />
-            
-            {/* The actual scrollable area */}
-            <div className="flex-1 scrollbar-hide overflow-y-auto p-4 md:p-6">
-              <Drawer.Title className="text-lg font-bold">Your folders</Drawer.Title>
-              <Drawer.Description className="text-muted-foreground mb-4">
-                The folders where you store your images
+          <Drawer.Overlay className='fixed inset-0 bg-black/40 backdrop-blur-[2px] z-50' />
+          <Drawer.Content className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[80%] bg-background border-t border-x border-cyan-800/40 rounded-t-xl z-50 flex flex-col shadow-2xl shadow-black/40">
+            {/* Handle */}
+            <div className="mx-auto w-12 h-1.5 flex-shrink-0 rounded-full bg-cyan-800/40 my-4" />
+
+            {/* Scrollable area */}
+            <div className="flex-1 scrollbar-hide overflow-y-auto px-4 pb-6 md:px-6">
+              {/* Header */}
+              <div className="flex items-center gap-2 mb-1">
+                <DynamicIcon iconName="Images" className="size-5 text-cyan-500" />
+                <Drawer.Title className="text-lg font-bold text-foreground">All Images</Drawer.Title>
+              </div>
+              <Drawer.Description className="text-xs text-muted-foreground mb-5 ml-7">
+                Every image stored across your folders
               </Drawer.Description>
-              <div className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-4">
+
+              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-3">
               {
                 isGetAllImagesLoading ? (
                   Array.from({length:14}).map((_,i)=>(
-                  <motion.div key={i}
-                    animate={{opacity:[0.3,0.6,0.3,0.6]}} 
-                    transition={{duration:2,repeat:Infinity,delay:i*0.05}} 
-                    className="flex flex-col justify-between items-center group relative min-w-36 min-h-36 overflow-hidden rounded-lg border border-border bg-muted/50 cursor-pointer shadow-sm animate-pulse">
-                      <div className="w-full h-full relative overflow-hidden">
+                    <motion.div key={i}
+                      animate={{opacity:[0.3,0.6,0.3,0.6]}}
+                      transition={{duration:2,repeat:Infinity,delay:i*0.05}}
+                      className="relative overflow-hidden rounded-lg border border-cyan-800/30 bg-muted/50 shadow-sm aspect-video">
                       <div className="w-full h-full bg-muted" />
-                    </div>
-                  </motion.div>
+                      <div className="absolute bottom-0 left-0 right-0 h-6 bg-muted/60" />
+                    </motion.div>
                   ))
                 ) : allImagesResponse?.success ? allImagesResponse.data.map((image:any,i:number)=>(
-              <motion.div key={i} initial={{opacity:0}} whileInView={{opacity:1,}} 
-            viewport={{once:true}}
-            exit={{opacity:0}} 
-            transition={{duration:0.1,type:"spring",stiffness:100,damping:15}} 
-            className="group relative aspect-square sm:min-w-36 sm:min-h-36 overflow-hidden rounded-lg border border-border bg-muted/50 cursor-pointer shadow-sm">
-              <Image src={image.url} 
-              width={400}
-              height={400}
-              unoptimized
-              className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-110" alt="Dashboard image" />
-              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center backdrop-blur-[2px]">
-                <Button size="icon" variant="secondary" className="size-8 rounded-full shadow-md scale-50 group-hover:scale-100 transition-transform duration-300">
-                  <DynamicIcon iconName="Eye" className="size-4" />
-                </Button>
-              </div>
-            </motion.div>
+                  <motion.div key={i}
+                    onClick={() => {
+                      setImagePreview(image.url);
+                      setImageName(image.name || "Image");
+                    }}
+                    initial={{opacity:0, y:8}}
+                    whileInView={{opacity:1, y:0}}
+                    viewport={{once:true}}
+                    exit={{opacity:0}}
+                    transition={{duration:0.15, type:"spring", stiffness:280, damping:22}}
+                    className="group relative overflow-hidden rounded-lg border border-cyan-800/30 shadow-sm shadow-cyan-900/20 bg-muted/50 cursor-pointer aspect-square sm:aspect-video">
+                    <Image src={image.url}
+                    width={400}
+                    height={250}
+                    unoptimized
+                    className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105" alt={image.name || "Image"} />
+                    {/* bottom name bar */}
+                    <div className="absolute bottom-0 left-0 right-0 z-10 px-2 py-1.5 bg-muted/40">
+                      <p className="text-[10px] text-white/90 font-medium line-clamp-1 drop-shadow">{image.name || "Image"}</p>
+                    </div>
+                    {/* hover overlay */}
+                    <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center backdrop-blur-[1px]">
+                      <Button size="icon" variant="custom" className="size-8 rounded-full shadow-lg scale-50 group-hover:scale-100 transition-transform duration-200">
+                        <DynamicIcon iconName="Eye" className="size-4" />
+                      </Button>
+                    </div>
+                  </motion.div>
                 )) : (
-                  <p className="text-center text-muted-foreground">No folders found!</p>
+                  <p className="text-center text-muted-foreground col-span-full py-10">No images found!</p>
                 )
               }
               </div>
@@ -148,7 +169,7 @@ export default function Dashoard() {
       <InfiniteLinesWrapper
       childContClassName='py-12 relative overflow-hidden'
       >
-        <header className='relative min-h-[60vh] w-full items-center flex sm:justify-start z-10 justify-center gap-8'>
+        <header className='relative min-h-[60vh] w-full items-center text-center sm:text-left flex sm:justify-start z-10 justify-center gap-8'>
           <motion.section
           initial={{position:"relative",x:-10}}
           animate={{opacity:1,x:0}}
@@ -240,18 +261,26 @@ export default function Dashoard() {
           : 
           recentImages && recentImages.length > 0 ?
           recentImages.toReversed().map((image:any, i:number) => (
-            <motion.div key={i} initial={{opacity:0}} whileInView={{opacity:1,}} 
+            <motion.div
+            key={i}
+            onClick={() => {
+              setImagePreview(image.url);
+              setImageName(image.name || "Image");
+            }}
+            initial={{opacity:0}}
+            whileInView={{opacity:1}}
             viewport={{once:true}}
-            exit={{opacity:0}} 
-            transition={{duration:0.1,type:"spring",stiffness:100,damping:15}} 
-            className="group relative w-20 h-20 sm:w-36 sm:h-36 flex-shrink-0 flex items-start overflow-hidden rounded-lg border border-border bg-muted/50 cursor-pointer shadow-sm">
-              <Image src={image.url} 
+            exit={{opacity:0}}
+            whileHover={{scale:1}}
+            transition={{duration:0.12, type:"spring", stiffness:300, damping:22}}
+            className="group relative w-20 h-20 sm:w-36 sm:h-36 flex-shrink-0 flex shadow-sm shadow-cyan-800 items-start overflow-hidden rounded-lg border border-cyan-800/20 bg-muted/50 cursor-pointer">
+              <Image src={image.url}
               width={400}
               height={400}
               unoptimized
-              className="aspect-square object-cover w-full h-full transition-transform duration-500 group-hover:scale-110" alt="Dashboard image" />
-              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center backdrop-blur-[2px]">
-                <Button size="icon" variant="secondary" className="size-8 rounded-full shadow-md scale-50 group-hover:scale-100 transition-transform duration-300">
+              className="aspect-square object-cover w-full h-full" alt={image.name || 'Image'} />
+              <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center backdrop-blur-[1px]">
+                <Button size="icon" variant="custom" className="size-8 rounded-full shadow-md scale-50 group-hover:scale-100 transition-transform duration-200">
                   <DynamicIcon iconName="Eye" className="size-4" />
                 </Button>
               </div>
@@ -271,6 +300,66 @@ export default function Dashoard() {
         </main>
       </InfiniteLinesWrapper>
 
+      {/* ── Image preview popup (modal - centered viewport overlay) ── */}
+      <AnimatePresence mode='wait'>
+      {
+        imagePreview !== "" && (
+        <motion.div
+         initial={{opacity:0}}
+         animate={{opacity:1}}
+         exit={{opacity:0}}
+         transition={{duration:0.2,ease:"easeInOut"}}
+         onClick={()=>setImagePreview("")}
+         className='w-full h-screen fixed inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm z-[9999] p-4'>
+            {/* Close button */}
+            <motion.div
+            initial={{opacity:0, scale:0.7}}
+            animate={{opacity:1, scale:1}}
+            exit={{opacity:0, scale:0.7}}
+            transition={{duration:0.15, delay:0.05, type:"spring", stiffness:400, damping:22}}
+            onClick={(e)=>{e.stopPropagation(); setImagePreview("");}}
+            className='absolute top-3 right-3 z-10 bg-white/10 hover:bg-cyan-800/60 border border-white/20 hover:border-cyan-700/60 transition-all duration-200 backdrop-blur-sm p-2 rounded-full cursor-pointer group'>
+              <DynamicIcon iconName="X" className='size-4 text-white group-hover:rotate-90 transition-transform duration-200'/>
+            </motion.div>
+
+            {/* Image card */}
+            <motion.div
+            initial={{opacity:0, scale:0.88, y:24}}
+            animate={{opacity:1, scale:1, y:0}}
+            exit={{opacity:0, scale:0.88, y:24}}
+            transition={{duration:0.25, type:"spring", stiffness:320, damping:26}}
+            onClick={(e)=>e.stopPropagation()}
+            className='flex flex-col rounded-xl overflow-hidden border border-cyan-800/40 shadow-2xl shadow-black/60 max-w-4xl w-full max-h-[92vh]'>
+              <div className='relative overflow-hidden flex-1'>
+                <Image
+                src={imagePreview}
+                priority={true}
+                fetchPriority='high'
+                width={1200}
+                height={800}
+                unoptimized
+                alt='image preview'
+                className='object-contain w-full max-h-[80vh]'
+                />
+              </div>
+              {/* Footer name bar */}
+              <motion.div
+              initial={{opacity:0, y:10}}
+              animate={{opacity:1, y:0}}
+              exit={{opacity:0, y:10}}
+              transition={{duration:0.2, delay:0.12}}
+              className="flex items-center justify-between gap-2 px-4 py-2.5 bg-black/60 backdrop-blur-sm border-t border-cyan-800/30">
+                <div className="flex items-center gap-2 min-w-0">
+                  <DynamicIcon iconName="Image" className="size-3.5 text-cyan-500 shrink-0" />
+                  <p className="text-xs sm:text-sm font-semibold text-white/90 truncate">{imageName}</p>
+                </div>
+                <span className="text-[10px] text-white/40 shrink-0">Click outside to close</span>
+              </motion.div>
+            </motion.div>
+        </motion.div>)
+      }
+      </AnimatePresence>
+
       <InfiniteLinesWrapper childContClassName="pt-8 pb-4">
         <div ref={scrollToFolderRef} className="flex justify-between items-end px-2">
           <div>
@@ -281,7 +370,8 @@ export default function Dashoard() {
             </h1>
             <p className='text-xs sm:text-sm text-muted-foreground mt-1'>Organize your image library efficiently</p>
           </div>
-          <Button onClick={()=>{router.push("/protected-dashboard/create-folder")}} variant="outline" size="sm" className="hidden sm:flex bg-background">
+          <Button onClick={()=>{router.push("/protected-dashboard/create-folder")}} variant="outline" size="sm" 
+          className="hidden sm:flex bg-background sm:border-cyan-700">
             <DynamicIcon iconName="Plus" className="size-4 mr-2 text-cyan-500" />
             New Folder
           </Button>
@@ -291,7 +381,7 @@ export default function Dashoard() {
       <InfiniteLinesWrapper
       childContClassName='min-h-[50vh] overflow-y-auto mb-10'
       >
-        <motion.main layout className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 w-full border-t border-r border-border'>
+        <motion.main layout className='grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 w-full'>
             <AnimatePresence>
             {
               !folders ? 

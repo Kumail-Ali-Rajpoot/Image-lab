@@ -21,50 +21,48 @@ export default function Folder({idx, folderName, numImages}: props) {
     toast.error("The folder images are not fetched");
   return (
     <motion.div
-      initial={{opacity:0}}
-      whileInView={{opacity:1}}
+      initial={{opacity:0, y:8}}
+      whileInView={{opacity:1, y:0}}
       viewport={{once:true}}
       exit={{opacity:0}}
-      transition={{duration:0.1,type:"spring",stiffness:100,damping:15}}>
+      transition={{duration:0.15, type:"spring", stiffness:200, damping:20}}
+      >
     <Link 
       href={`/protected-dashboard/folder/${folderName}`}
       className={cn(
-        'flex flex-col p-2 border-b hover:bg-accent/20 cursor-pointer border-l',
-        'active:bg-accent/40 block w-full',
+        'flex flex-col p-0 border border-cyan-800/40 shadow-sm shadow-cyan-900/20 hover:border-cyan-700/60 hover:shadow-cyan-700/20 cursor-pointer rounded-lg overflow-hidden transition-all duration-200',
+        'active:scale-[0.98] block w-full',
         'no-underline text-inherit'
       )}
     >
-        <div className='flex items-center line-clamp-1 justify-between'>
-          {/* Folder Name */}
-            <p className='flex items-center gap-2 text-xs line-clamp-1 sm:text-sm capitalize'>
-              <DynamicIcon iconName='Folder' className='size-3 sm:size-5 text-cyan-500' />
-              {folderName}
-            </p>
-            <p className='text-xs text-muted-foreground'>images: {images?.length || 0}</p>
-        </div>
-        <div className='border-t mt-1'>
-              <p className='text-xs py-2 text-muted-foreground'>The images store in this folder</p>
-            <div className='flex gap-2 overflow-x-hidden border-t py-2'>
-                {images.length !==0 ? images.map((img:any,i:number)=>(
-                  <Image
-                  key={i}
-                  width={100}
-                  height={100}
-                  unoptimized
-                  fetchPriority='low'
-                  src={img.url}
-                  className='size-10 rounded'
-                  alt={`Image ${i}` }/>
-                )) :
-                (
-                  <div className='flex items-center gap-1'>
-                    <div className='size-10 rounded bg-muted'/>
-                    <div className='size-10 rounded bg-muted'/>
-                    <div className='size-10 rounded bg-muted'/>
-                  </div>
-                )
-                }
+        {/* Image preview grid — 2x2 landscape strips */}
+        <div className='grid grid-cols-2 gap-px bg-cyan-800/10'>
+          {images.length !== 0 ? images.slice(0,4).map((img:any, i:number) => (
+            <div key={i} className='relative aspect-video overflow-hidden bg-muted'>
+              <Image
+              width={200}
+              height={120}
+              unoptimized
+              fetchPriority='low'
+              src={img.url}
+              className='w-full h-full object-cover'
+              alt={`Image ${i}`} />
             </div>
+          )) : (
+            Array.from({length:4}).map((_,i) => (
+              <div key={i} className='aspect-video bg-muted/60' />
+            ))
+          )}
+        </div>
+        {/* Name + count bar */}
+        <div className='flex items-center justify-between px-2.5 py-2 bg-background'>
+          <p className='flex items-center gap-1.5 text-xs sm:text-sm font-semibold capitalize truncate'>
+            <DynamicIcon iconName='Folder' className='size-3.5 sm:size-4 text-cyan-500 shrink-0' />
+            {folderName}
+          </p>
+          <span className='text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full shrink-0 ml-1'>
+            {images?.length || 0}
+          </span>
         </div>
     </Link>
     </motion.div>
@@ -76,49 +74,34 @@ export function FolderLoader() {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="flex flex-col p-2 border-b border-l w-full bg-background"
+      className="flex flex-col border border-cyan-800/30 rounded-lg overflow-hidden bg-background"
     >
-      <div className="flex items-center justify-between">
-        {/* Animated Folder Name Placeholder */}
+      {/* image preview grid skeleton */}
+      <div className="grid grid-cols-2 gap-px bg-cyan-800/10">
+        {[1,2,3,4].map((i) => (
+          <motion.div
+            key={i}
+            animate={{ opacity: [0.3, 0.6, 0.3] }}
+            transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: i * 0.1 }}
+            className="aspect-video bg-muted"
+          />
+        ))}
+      </div>
+      {/* name bar skeleton */}
+      <div className="flex items-center justify-between px-2.5 py-2 bg-background">
         <div className="flex items-center gap-2">
-          <div className="size-5 rounded bg-muted animate-pulse" />
-          <motion.div 
+          <div className="size-4 rounded bg-muted animate-pulse" />
+          <motion.div
             animate={{ opacity: [0.3, 0.6, 0.3] }}
             transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-            className="h-4 w-24 bg-muted rounded" 
+            className="h-3.5 w-24 bg-muted rounded"
           />
         </div>
-        {/* Animated Count Placeholder */}
-        <motion.div 
+        <motion.div
           animate={{ opacity: [0.3, 0.6, 0.3] }}
           transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: 0.2 }}
-          className="h-3 w-12 bg-muted rounded" 
+          className="h-4 w-6 bg-muted rounded-full"
         />
-      </div>
-
-      <div className="border-t mt-1">
-        <motion.div 
-          animate={{ opacity: [0.3, 0.6, 0.3] }}
-          transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: 0.4 }}
-          className="h-3 w-40 bg-muted rounded my-3" 
-        />
-        
-        <div className="flex gap-2 overflow-x-hidden border-t py-2">
-          {[1, 2, 3, 4].map((i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0.3 }}
-              animate={{ opacity: [0.3, 0.7, 0.3] }}
-              transition={{
-                duration: 1.5,
-                repeat: Infinity,
-                ease: "easeInOut",
-                delay: i * 0.1, // Staggered effect
-              }}
-              className="size-10 rounded bg-muted"
-            />
-          ))}
-        </div>
       </div>
     </motion.div>
   );
