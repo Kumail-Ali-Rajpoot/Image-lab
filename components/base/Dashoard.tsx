@@ -362,19 +362,21 @@ export default function Dashoard() {
 
       <InfiniteLinesWrapper childContClassName="pt-8 pb-4">
         <div ref={scrollToFolderRef} className="flex justify-between items-end px-2">
-          <div>
+          <div className='w-full'>
             <h1
-            className='text-md sm:text-lg md:text-xl flex items-center gap-2 font-bold'>
-              <DynamicIcon iconName='FolderOpen' className='size-5 text-cyan-500' />
-              Folders <span className="text-muted-foreground font-normal text-sm ml-1">({folders? folders?.length : "loading..."})</span>
+            className='text-md flex justify-between items-center w-full gap-2 sm:text-lg md:text-xl font-bold'>
+              <div className='gap-2 flex items-center'>
+                <DynamicIcon iconName='FolderOpen' className='size-5 text-cyan-500' />
+                Folders <span className="text-muted-foreground font-normal text-sm ml-1">({folders? folders?.length : "loading..."})</span>
+              </div>
+              <Button onClick={()=>{router.push("/protected-dashboard/create-folder")}} variant="outline" size="sm" 
+              className="flex bg-background sm:border-cyan-700">
+                <DynamicIcon iconName="Plus" className="size-4 mr-2 text-cyan-500" />
+                New Folder
+              </Button>
             </h1>
             <p className='text-xs sm:text-sm text-muted-foreground mt-1'>Organize your image library efficiently</p>
           </div>
-          <Button onClick={()=>{router.push("/protected-dashboard/create-folder")}} variant="outline" size="sm" 
-          className="hidden sm:flex bg-background sm:border-cyan-700">
-            <DynamicIcon iconName="Plus" className="size-4 mr-2 text-cyan-500" />
-            New Folder
-          </Button>
         </div>
       </InfiniteLinesWrapper>
       

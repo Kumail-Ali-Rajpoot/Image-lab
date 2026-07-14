@@ -144,7 +144,7 @@ export default function Page() {
                     </motion.form>
                 </section>
                 {/* second container containing image for interface */}
-                <section className='border-l'>
+                <section className='border-l sm:inline-block hidden'>
                     <Image src="/slider-preview-image-portrait.png" 
                     width={1000}
                     height={1000}

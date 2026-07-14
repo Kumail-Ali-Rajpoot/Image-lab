@@ -36,7 +36,7 @@ export default function Folder({idx, folderName, numImages}: props) {
       )}
     >
         {/* Image preview grid — 2x2 landscape strips */}
-        <div className='grid grid-cols-2 gap-px bg-cyan-800/10'>
+        <div className='grid grid-cols-2 grid-rows-2 gap-px bg-cyan-800/10'>
           {images.length !== 0 ? images.slice(0,4).map((img:any, i:number) => (
             <div key={i} className='relative aspect-video overflow-hidden bg-muted'>
               <Image
