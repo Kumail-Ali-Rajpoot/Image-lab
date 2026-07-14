@@ -17,10 +17,10 @@ export default function InfiniteLinesWrapper({children,parentContClassName,child
     transition={{duration: 0.1}}
     viewport={{once:true}}
     style={parentStyle}
-    className={cn('border-b w-full flex justify-center',parentContClassName)}>
+    className={cn('border-b w-full flex justify-center border-cyan-800/40',parentContClassName)}>
         <div 
         style={childStyle}
-        className={cn('max-w-7xl sm:p-1 md:p-2 p-0.5 w-full border-x',childContClassName)}>
+        className={cn('max-w-7xl sm:p-1 md:p-2 p-0.5 w-full border-x border-cyan-800/60',childContClassName)}>
             {children}
         </div>
     </motion.div>

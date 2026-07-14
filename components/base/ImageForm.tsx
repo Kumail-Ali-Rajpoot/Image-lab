@@ -166,7 +166,7 @@ export default function ImageForm() {
       layout
       key={"image-form"}
       onSubmit={(e:any)=>{handleSubmit(e)}} className='p-2 sm:p-3 md:p-4 border-t border-r flex flex-col justify-center items-center gap-2'>
-        <motion.div layout key={"image-form-div"} className='w-full bg-card flex flex-col gap-2 border rounded-sm shadow-xs shadow-blue-800 p-2'>
+        <motion.div layout key={"image-form-div"} className='w-full bg-card flex flex-col gap-2 border rounded-sm shadow-xs shadow-cyan-800/30 p-2'>
 
           <motion.div
           className='row-span-2 w-full'

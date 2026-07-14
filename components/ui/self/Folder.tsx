@@ -37,7 +37,7 @@ export default function Folder({idx, folderName, numImages}: props) {
         <div className='flex items-center line-clamp-1 justify-between'>
           {/* Folder Name */}
             <p className='flex items-center gap-2 text-xs line-clamp-1 sm:text-sm capitalize'>
-              <DynamicIcon iconName='Folder' className='size-3 sm:size-5' />
+              <DynamicIcon iconName='Folder' className='size-3 sm:size-5 text-cyan-500' />
               {folderName}
             </p>
             <p className='text-xs text-muted-foreground'>images: {images?.length || 0}</p>

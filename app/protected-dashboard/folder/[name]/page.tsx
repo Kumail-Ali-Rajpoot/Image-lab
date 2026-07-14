@@ -149,10 +149,10 @@ export default function FolderPage() {
       >
           <nav className='w-full flex items-center justify-between'>
             <Image 
-            className='w-15 sm:w-20'
-            src={"/logo.png"} alt="logo" width={100} height={100} />
+            className='w-15 sm:w-20 object-contain'
+            src={"/logo-2.png"} alt="logo" width={100} height={100} />
             <Link href={`/protected-dashboard/folder/${encodeURIComponent(folderName)}/add`}>
-              <Button size={"sm"} className='md:scale-100 sm:scale-90 scale-75'><DynamicIcon iconName="Image"/>Add Images</Button>
+              <Button variant="custom" size={"sm"} className='md:scale-100 sm:scale-90 scale-75'><DynamicIcon iconName="Plus" className="mr-1.5 size-4"/>Add Images</Button>
             </Link>
           </nav>
       </InfiniteLinesWrapper>
@@ -161,9 +161,9 @@ export default function FolderPage() {
           className='p-1 flex justify-center group items-center sm:gap-1 md:gap-2'>
             <motion.div whileHover={{scale:1.05}} transition={{duration:0.05,ease:"easeInOut"}}
             className='rounded-xs p-0.5 scale-60 sm:scale-75 md:scale-90 flex transition-all duration-200 group-hover:-translate-x-1 group-active:-translate-x-2'>  
-              <DynamicIcon iconName="ArrowLeft"/>
+              <DynamicIcon iconName="ArrowLeft" className="text-cyan-500 group-hover:text-cyan-400 transition-colors" />
             </motion.div>
-          <h1 className='text-[10px] sm:text-sm md:text-md font-semibold'>Folder {folderName}</h1>
+          <h1 className='text-[10px] sm:text-sm md:text-md font-semibold'>Folder <span className="text-cyan-500 font-bold">{folderName}</span></h1>
           </Link>
           <div className='relative flex items-center '>
           <AnimatePresence>
@@ -214,8 +214,8 @@ export default function FolderPage() {
               <DynamicIcon iconName="Trash2" className='w-4 h-4'/> All</Button>
             <Button variant={"outline"} size={xs?"xs":"sm"} 
               onClick={()=>{setIsSelectMode(true); setIsMenuOpen(false); }}
-              className='w-full justify-start gap-2'> 
-              <DynamicIcon iconName="Trash" className='w-4 h-4'/> Selected</Button>
+              className='w-full justify-start gap-2 hover:text-cyan-500 hover:border-cyan-500/50 transition-colors'> 
+              <DynamicIcon iconName="CheckSquare" className='w-4 h-4 text-cyan-500'/> Selected</Button>
           </motion.div>
           :
           <motion.div
@@ -229,7 +229,7 @@ export default function FolderPage() {
           }}
           layoutId="menu"
           className='rounded-sm p-1 transition-colors duration-200 hover:bg-muted/40 cursor-pointer'>
-            <DynamicIcon iconName="Menu"/>
+            <DynamicIcon iconName="MoreVertical" className="text-cyan-500 hover:text-cyan-400 transition-colors" />
           </motion.div>
           }
           </AnimatePresence>

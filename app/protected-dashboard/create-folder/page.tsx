@@ -109,7 +109,7 @@ export default function Page() {
                         boxShadow
                     }}
                     transition={{duration:1,type:"spring",stiffness:7,damping:10,mass:1,delay:1}}
-                    className='bg-card border border-blue-500/20 flex flex-col gap-2 w-full max-w-sm p-4 rounded-sm'
+                    className='bg-card border border-cyan-500/20 flex flex-col gap-2 w-full max-w-sm p-4 rounded-sm'
                     onSubmit={(e:React.FormEvent<HTMLFormElement>)=>{
                         const promiseReturned = handleSubmit(e)
                         promiseReturned.then((data:any)=>{

@@ -25,7 +25,7 @@ export default function Navbar() {
     animate={{filter: "blur(0px)",opacity:1}} 
     transition={{duration: 0.1}}>
     <InfiniteLinesWrapper childContClassName='flex justify-between items-center'>
-      <Image src="/logo.png" alt="logo" width={100} height={100} className='' />
+      <Image src="/logo-2.png" alt="logo" width={100} height={1000} className='h-full w-fit object-contain' />
       
       <div>
         {/* 2. Check if we are still loading */}
@@ -33,7 +33,7 @@ export default function Navbar() {
           <div className='sm:size-7 size-5 md:size-10 rounded-full border bg-neutral-800 animate-pulse' />
         ) : session?.user ? (
           <div className='flex items-center gap-2'>
-          <Button size={"sm"} variant={"default"} onClick={async() => {
+          <Button size={"sm"} variant={"custom"} onClick={async() => {
             try {
               await authClient.signOut();
               router.push("/");
@@ -42,7 +42,7 @@ export default function Navbar() {
               toast.error("Failed to logout!");
             }
           }}>
-            <DynamicIcon iconName='DoorOpen' /> Logout
+            <DynamicIcon iconName='LogOut' className="mr-1.5 size-4" /> Logout
           </Button>
           <Image
             unoptimized={true} 
@@ -57,7 +57,9 @@ export default function Navbar() {
           /* 4. Fallback if user is not logged in */
           <Button onClick={async() => await authClient.signIn.social({
             provider: "google", 
-          })} className="text-sm border px-3 py-1 rounded-md">
+          })} 
+          variant={"custom"}
+          className="text-sm border px-3 py-1 rounded-md">
             Login
           </Button>
         )}

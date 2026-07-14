@@ -23,27 +23,27 @@ export default function NeonMatrixLoader() {
                 animationDelay: `${index * 0.1}s`
               }}
             >
-              <div className='w-full h-full rounded-md bg-gradient-to-br from-cyan-500 via-blue-500 to-indigo-500 shadow-lg shadow-blue-500/50' />
+              <div className='w-full h-full rounded-md bg-gradient-to-br from-cyan-400 via-cyan-500 to-cyan-600 shadow-lg shadow-cyan-500/50' />
             </div>
           ))}
         </div>
 
         {/* Center glow effect */}
         <div className='absolute inset-0 flex items-center justify-center pointer-events-none'>
-          <div className='w-16 h-16 bg-blue-500/30 rounded-full blur-xl animate-pulse' />
+          <div className='w-16 h-16 bg-cyan-500/30 rounded-full blur-xl animate-pulse' />
         </div>
       </div>
 
       {/* Loading text */}
       <div className='flex flex-col items-center gap-2'>
-        <p className='text-sm font-semibold bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-500 bg-clip-text text-transparent animate-pulse'>
+        <p className='text-sm font-semibold bg-gradient-to-r from-cyan-400 via-cyan-500 to-cyan-600 bg-clip-text text-transparent animate-pulse'>
           Loading
         </p>
         <div className='flex gap-1'>
           {[...Array(3)].map((_, i) => (
             <div
               key={i}
-              className='w-1.5 h-1.5 rounded-full bg-blue-500'
+              className='w-1.5 h-1.5 rounded-full bg-cyan-500'
               style={{
                 animation: 'bounce 2s infinite ease-in-out',
                 animationDelay: `${i * 0.2}s`

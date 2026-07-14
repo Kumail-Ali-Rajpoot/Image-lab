@@ -17,6 +17,7 @@ import { fetcher } from "@/lib/fetcher"
 import { Drawer } from "vaul"
 import Link from "next/link";
 import { useRef } from 'react';
+import { cn } from '@/lib/utils';
 
 async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
   const image = e.target.files?.[0];
@@ -147,7 +148,7 @@ export default function Dashoard() {
       <InfiniteLinesWrapper
       childContClassName='py-12 relative overflow-hidden'
       >
-        <header className='w-full items-center grid grid-cols-1 sm:grid-cols-2 gap-8'>
+        <header className='relative min-h-[60vh] w-full items-center flex sm:justify-start z-10 justify-center gap-8'>
           <motion.section
           initial={{position:"relative",x:-10}}
           animate={{opacity:1,x:0}}
@@ -170,7 +171,7 @@ export default function Dashoard() {
               transition={{ duration: 0.1, delay: 1 }} // High delay
               className='flex gap-2'>
               <Link href={"/protected-dashboard/folder/default/add"}>
-                <Button variant="default">Store images</Button>
+                <Button variant="custom">Store images</Button>
               </Link>
               <Button variant="outline" 
               onClick={()=>scrollToFolderRef?.current?.scrollIntoView({behavior:"smooth",block:"start"})}
@@ -180,17 +181,24 @@ export default function Dashoard() {
 
           </motion.section>
           <motion.div
-          initial={{position:"relative",opacity:0,left:"10%"}}
-          animate={{opacity:1,left:"0%"}}
+          initial={{opacity:0,x:10}}
+          animate={{opacity:1,x:0}}
           transition={{duration:0.1,delay:0.95}}
+          className="absolute inset-0 -z-10 pointer-events-none w-full h-full"
           >
             <Image 
             width={10000}
             height={10000}
-            src="/storage-systems.png"
+            src="/hero-image-2.png"
             alt="image-lines"
             fetchPriority='high'
-            className=''
+            className="w-full h-full object-cover"
+            style={{
+              maskImage: 'linear-gradient(to right, transparent 10%, black 60%), linear-gradient(to bottom, black 80%, transparent 100%)',
+              WebkitMaskImage: 'linear-gradient(to right, transparent 20%, black 60%), linear-gradient(to bottom, black 80%, transparent 100%)',
+              maskComposite: 'intersect',
+              WebkitMaskComposite: 'source-in'
+            }}
             />
           </motion.div>
         </header>
@@ -202,7 +210,7 @@ export default function Dashoard() {
             <h1
             className='text-md sm:text-lg md:text-xl flex items-center justify-between w-full gap-2 font-bold'>
               <section className='flex items-center gap-2'>
-                <DynamicIcon iconName='Image' className='size-5 text-primary' />
+                <DynamicIcon iconName='Image' className='size-5 text-cyan-500' />
                 Recent Images
               </section>
               <Button size="sm" onClick={() => setIsOpenDrawer(drawer=>!drawer)} variant="ghost" className="flex text-muted-foreground hover:text-foreground">
@@ -268,13 +276,13 @@ export default function Dashoard() {
           <div>
             <h1
             className='text-md sm:text-lg md:text-xl flex items-center gap-2 font-bold'>
-              <DynamicIcon iconName='FolderOpen' className='size-5 text-primary' />
+              <DynamicIcon iconName='FolderOpen' className='size-5 text-cyan-500' />
               Folders <span className="text-muted-foreground font-normal text-sm ml-1">({folders? folders?.length : "loading..."})</span>
             </h1>
             <p className='text-xs sm:text-sm text-muted-foreground mt-1'>Organize your image library efficiently</p>
           </div>
           <Button onClick={()=>{router.push("/protected-dashboard/create-folder")}} variant="outline" size="sm" className="hidden sm:flex bg-background">
-            <DynamicIcon iconName="Plus" className="size-4 mr-2" />
+            <DynamicIcon iconName="Plus" className="size-4 mr-2 text-cyan-500" />
             New Folder
           </Button>
         </div>
