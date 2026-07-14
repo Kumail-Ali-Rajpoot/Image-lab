@@ -377,7 +377,7 @@ export default function FolderPage() {
               height={1000}
               unoptimized
               alt='image preview' 
-              className='object-contain w-[98%]'/>
+              className='object-contain max-h-[96vh] w-[98%]'/>
               <motion.section 
               initial={{clipPath:"inset(20% 0 20% 0)", opacity:0}}
               animate={{clipPath:"inset(0% 0 0% 0)", opacity:1}}
